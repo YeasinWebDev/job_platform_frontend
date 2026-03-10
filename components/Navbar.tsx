@@ -31,7 +31,7 @@ export default function Navbar() {
         ))}
       </ul>
 
-      <Link href="/login" className="bg-primary text-white px-3 py-2 rounded-lg">
+      <Link href="/auth" className="bg-primary text-white px-3 py-2 rounded-lg">
        Login
       </Link>
     </nav>
