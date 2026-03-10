@@ -69,8 +69,9 @@ function FeaturedJobs() {
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: i * 0.15, ease: "easeInOut" }}
+            viewport={{ once: true, margin: "-80px" }}
             key={i}
-            className={`cursor-pointer bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300 reveal reveal-delay-${(i % 2) + 1}`}
+            className={`cursor-pointer bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300`}
           >
             {/* Company */}
             <div className="flex items-center gap-3 mb-4">
@@ -107,7 +108,7 @@ function FeaturedJobs() {
       </div>
 
       {/* CTA */}
-      <div className="mt-12 text-center reveal">
+      <div className="mt-12 text-center">
         <Link
           href="#"
           className="inline-flex items-center gap-2.5 border border-primary text-primary px-8 py-3.5 font-bold text-[0.8rem] tracking-wider uppercase hover:bg-primary hover:text-white transition-all duration-300"
