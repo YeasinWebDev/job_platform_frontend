@@ -22,9 +22,9 @@ export default function Navbar() {
       </div>
 
       <ul className="hidden md:flex gap-9 list-none">
-        {["Jobs", "Companies", "How It Works", "Blog"].map((item) => (
+        {["Job", "Companies", "How It Works", "Blog"].map((item) => (
           <li key={item}>
-            <Link href={`#${item.toLowerCase().replace(/\s+/g, "-")}`} className="text-[0.82rem] tracking-widest uppercase hover:text-primary/80 transition-colors duration-200">
+            <Link href={`${item.toLowerCase().replace(/\s+/g, "-")}`} className="text-[0.82rem] tracking-widest uppercase hover:text-primary/80 transition-colors duration-200">
               {item}
             </Link>
           </li>
