@@ -11,7 +11,7 @@ interface Job {
   title: string;
   company: string;
   location: string;
-  type: "full-time" | "part-time" | "contract" | "remote" | "internship";
+  type: "full-time" | "part-time" | "contract" | "remote" | "onsite" | "internship";
   salary: string;
   salaryMin: number;
   salaryMax: number;
@@ -170,7 +170,8 @@ interface FilterState {
   location: string;
   category: string;
   experience: string[];
-  jobTypes: string[];
+  jobTypes: string;
+  contact: string[];
   salaryMin: number;
   salaryMax: number;
   datePosted: string;
@@ -201,7 +202,8 @@ export default function JobBoardPage() {
     location: searchParams.get("location") || "",
     category: searchParams.get("category") || "",
     experience: searchParams.getAll("experience") || [],
-    jobTypes: searchParams.getAll("type") || [],
+    jobTypes: searchParams.get("type") || "",
+    contact: searchParams.getAll("contact") || [],
     salaryMin: Number(searchParams.get("salaryMin")) || 40000,
     salaryMax: Number(searchParams.get("salaryMax")) || 160000,
     datePosted: searchParams.get("datePosted") || "any-time",
@@ -231,7 +233,8 @@ export default function JobBoardPage() {
       if (newFilters.location) params.set("location", newFilters.location);
       if (newFilters.category) params.set("category", newFilters.category);
       newFilters.experience.forEach((exp) => params.append("experience", exp));
-      newFilters.jobTypes.forEach((type) => params.append("type", type));
+      if (newFilters.jobTypes) params.set("type", newFilters.jobTypes);
+      newFilters.contact.forEach((contact) => params.append("contact", contact));
       if (newFilters.salaryMin !== 40000) params.set("salaryMin", newFilters.salaryMin.toString());
       if (newFilters.salaryMax !== 160000) params.set("salaryMax", newFilters.salaryMax.toString());
       if (newFilters.datePosted !== "past-week") params.set("datePosted", newFilters.datePosted);
@@ -271,7 +274,7 @@ export default function JobBoardPage() {
   }, [filters.location]);
 
   // Handle checkbox groups
-  const handleCheckboxGroup = (key: "experience" | "jobTypes", value: string, checked: boolean) => {
+  const handleCheckboxGroup = (key: "experience" | "contact" , value: string, checked: boolean) => {
     setFilters((prev) => {
       const current = [...prev[key]];
       const newValues = checked ? [...current, value] : current.filter((v) => v !== value);
@@ -304,7 +307,8 @@ export default function JobBoardPage() {
       location: "",
       category: "",
       experience: [],
-      jobTypes: [],
+      jobTypes: "",
+      contact: [],
       salaryMin: 40000,
       salaryMax: 160000,
       datePosted: "any-time",
@@ -340,8 +344,21 @@ export default function JobBoardPage() {
       }
 
       // Job type filter
-      if (filters.jobTypes.length > 0 && !filters.jobTypes.includes(job.type)) {
+      if (filters.jobTypes && job.type !== filters.jobTypes) {
         return false;
+      }
+
+      // Contact filter (maps to job types)
+      if (filters.contact.length > 0) {
+        const contactTypeMap: { [key: string]: string } = {
+          fulltime: "full-time",
+          parttime: "part-time",
+          internship: "internship",
+        };
+        const mappedTypes = filters.contact.map(c => contactTypeMap[c]).filter(Boolean);
+        if (mappedTypes.length > 0 && !mappedTypes.includes(job.type)) {
+          return false;
+        }
       }
 
       // Salary filter
@@ -457,26 +474,44 @@ export default function JobBoardPage() {
                 </div>
               </div>
 
-              {/* Job type checkboxes */}
+              {/* Job type radio buttons */}
               <div className="mb-6">
                 <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Job type</label>
                 <div className="space-y-2">
                   {[
-                    { label: "Full-time", value: "full-time", count: 5 },
-                    { label: "Part-time", value: "part-time", count: 1 },
-                    { label: "Contract", value: "contract", count: 1 },
-                    { label: "Remote", value: "remote", count: 3 },
-                    { label: "Internship", value: "internship", count: 0 },
-                  ].map(({ label, value, count }) => (
+                    { label: "Remote", value: "remote" },
+                    { label: "Onsite", value: "onsite" },
+                  ].map(({ label, value }) => (
+                    <label key={value} className="flex items-center gap-2 text-sm text-white">
+                      <input
+                        type="radio"
+                        name="jobType"
+                        value={value}
+                        checked={filters.jobTypes === value}
+                        onChange={(e) => handleFilterChange("jobTypes", e.target.value)}
+                        className="text-slate-600 border-slate-300 focus:ring-slate-200"
+                      />
+                      <span>{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-6">
+                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Contact</label>
+                <div className="space-y-2">
+                  {[
+                    { label: "FullTime", value: "fulltime" },
+                    { label: "PartTime", value: "parttime" },
+                    { label: "Internship", value: "internship" },
+                  ].map(({ label, value }) => (
                     <label key={value} className="flex items-center gap-2 text-sm text-white">
                       <input
                         type="checkbox"
-                        checked={filters.jobTypes.includes(value)}
-                        onChange={(e) => handleCheckboxGroup("jobTypes", value, e.target.checked)}
+                        checked={filters.contact.includes(value)}
+                        onChange={(e) => handleCheckboxGroup("contact", value, e.target.checked)}
                         className="rounded border-slate-300 text-slate-600 focus:ring-slate-200 focus:ring-offset-0"
                       />
                       <span>{label}</span>
-                      <span className="text-xs text-white ml-auto">{jobsData.filter((j) => j.type === value).length}</span>
                     </label>
                   ))}
                 </div>
@@ -519,7 +554,7 @@ export default function JobBoardPage() {
                 <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Date posted</label>
                 <div className="space-y-1.5">
                   {[
-                    { label: "Any time", value: "any-time"},
+                    { label: "Any time", value: "any-time" },
                     { label: "Past 24 hours", value: "past-24h" },
                     { label: "Past week", value: "past-week" },
                     { label: "Past month", value: "past-month" },
@@ -557,7 +592,9 @@ export default function JobBoardPage() {
                   <div key={job.id} className={`cursor-pointer bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300`}>
                     {/* Company */}
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-9 h-9 bg-primary/10 border border-primary/15 flex items-center justify-center font-bold text-[0.72rem] text-primary">{job.company.slice(0, 1)}</div>
+                      <div className="w-9 h-9 bg-primary/10 border border-primary/15 flex items-center justify-center font-bold text-[0.72rem] text-primary">
+                        {job.company.slice(0, 1)}
+                      </div>
                       <span className="text-[0.78rem] text-muted tracking-wider">{job.company}</span>
                     </div>
 
