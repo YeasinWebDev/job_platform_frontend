@@ -1,22 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import {
-  SlidersHorizontal,
-  Bell,
-  Search,
-  MapPin,
-  ChevronDown,
-  X,
-  ArrowDownWideNarrow,
-  PenTool,
-  Code,
-  Camera,
-  BarChart,
-  Briefcase,
-  Globe,
-} from "lucide-react";
+import { SlidersHorizontal, Bell, Search, MapPin, ChevronDown, X, ArrowDownWideNarrow, PenTool, Code, Camera, BarChart, Briefcase, Globe } from "lucide-react";
+import { useDebounce } from "use-debounce";
 
 // Define types for job posting
 interface Job {
@@ -199,13 +186,7 @@ const JobTypeBadge: React.FC<{ type: Job["type"] }> = ({ type }) => {
     internship: "bg-slate-50 text-white border-slate-200",
   };
 
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${styles[type]}`}
-    >
-      {type}
-    </span>
-  );
+  return <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${styles[type]}`}>{type}</span>;
 };
 
 // Main component
@@ -223,7 +204,7 @@ export default function JobBoardPage() {
     jobTypes: searchParams.getAll("type") || [],
     salaryMin: Number(searchParams.get("salaryMin")) || 40000,
     salaryMax: Number(searchParams.get("salaryMax")) || 160000,
-    datePosted: searchParams.get("datePosted") || "past-week",
+    datePosted: searchParams.get("datePosted") || "any-time",
   });
 
   // Local UI state for salary range (for smoother slider)
@@ -232,48 +213,76 @@ export default function JobBoardPage() {
     max: filters.salaryMax,
   });
 
+  // Debounced search and location
+  const [searchInput, setSearchInput] = useState(filters.search);
+  const [locationInput, setLocationInput] = useState(filters.location);
+  const [debouncedSearch] = useDebounce(searchInput, 2000);
+  const [debouncedLocation] = useDebounce(locationInput, 2000);
+
+  // Ref to skip initial URL update
+  const isInitialMount = useRef(true);
+
   // Update URL when filters change
-  const updateUrl = useCallback((newFilters: FilterState) => {
-    const params = new URLSearchParams();
-    
-    if (newFilters.search) params.set("search", newFilters.search);
-    if (newFilters.location) params.set("location", newFilters.location);
-    if (newFilters.category) params.set("category", newFilters.category);
-    newFilters.experience.forEach(exp => params.append("experience", exp));
-    newFilters.jobTypes.forEach(type => params.append("type", type));
-    if (newFilters.salaryMin !== 40000) params.set("salaryMin", newFilters.salaryMin.toString());
-    if (newFilters.salaryMax !== 160000) params.set("salaryMax", newFilters.salaryMax.toString());
-    if (newFilters.datePosted !== "past-week") params.set("datePosted", newFilters.datePosted);
+  const updateUrl = useCallback(
+    (newFilters: FilterState) => {
+      const params = new URLSearchParams();
 
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [pathname, router]);
+      if (newFilters.search) params.set("search", newFilters.search);
+      if (newFilters.location) params.set("location", newFilters.location);
+      if (newFilters.category) params.set("category", newFilters.category);
+      newFilters.experience.forEach((exp) => params.append("experience", exp));
+      newFilters.jobTypes.forEach((type) => params.append("type", type));
+      if (newFilters.salaryMin !== 40000) params.set("salaryMin", newFilters.salaryMin.toString());
+      if (newFilters.salaryMax !== 160000) params.set("salaryMax", newFilters.salaryMax.toString());
+      if (newFilters.datePosted !== "past-week") params.set("datePosted", newFilters.datePosted);
 
-  // Handle filter changes
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router],
+  );
+  // Update URL when filters change
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    updateUrl(filters);
+  }, [filters, updateUrl]);
   const handleFilterChange = useCallback((key: keyof FilterState, value: any) => {
-    setFilters(prev => {
-      const newFilters = { ...prev, [key]: value };
-      updateUrl(newFilters);
-      return newFilters;
-    });
-  }, [updateUrl]);
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  // Update filters when debounced search/location change
+  useEffect(() => {
+    handleFilterChange("search", debouncedSearch);
+  }, [debouncedSearch, handleFilterChange]);
+
+  useEffect(() => {
+    handleFilterChange("location", debouncedLocation);
+  }, [debouncedLocation, handleFilterChange]);
+
+  // Sync local inputs with filters (for URL changes)
+  useEffect(() => {
+    setSearchInput(filters.search);
+  }, [filters.search]);
+
+  useEffect(() => {
+    setLocationInput(filters.location);
+  }, [filters.location]);
 
   // Handle checkbox groups
   const handleCheckboxGroup = (key: "experience" | "jobTypes", value: string, checked: boolean) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       const current = [...prev[key]];
-      const newValues = checked 
-        ? [...current, value]
-        : current.filter(v => v !== value);
-      
-      const newFilters = { ...prev, [key]: newValues };
-      updateUrl(newFilters);
-      return newFilters;
+      const newValues = checked ? [...current, value] : current.filter((v) => v !== value);
+
+      return { ...prev, [key]: newValues };
     });
   };
 
   // Handle salary range change
   const handleSalaryChange = (type: "min" | "max", value: number) => {
-    setSalaryRange(prev => {
+    setSalaryRange((prev) => {
       const newRange = { ...prev, [type]: value };
       return newRange;
     });
@@ -298,19 +307,20 @@ export default function JobBoardPage() {
       jobTypes: [],
       salaryMin: 40000,
       salaryMax: 160000,
-      datePosted: "past-week",
+      datePosted: "any-time",
     };
     setFilters(resetState);
     setSalaryRange({ min: 40000, max: 160000 });
+    setSearchInput("");
+    setLocationInput("");
     router.push(pathname, { scroll: false });
   };
 
   // Filter jobs based on current filters
   const filteredJobs = useMemo(() => {
-    return jobsData.filter(job => {
+    return jobsData.filter((job) => {
       // Search filter
-      if (filters.search && !job.title.toLowerCase().includes(filters.search.toLowerCase()) &&
-          !job.company.toLowerCase().includes(filters.search.toLowerCase())) {
+      if (filters.search && !job.title.toLowerCase().includes(filters.search.toLowerCase()) && !job.company.toLowerCase().includes(filters.search.toLowerCase())) {
         return false;
       }
 
@@ -361,13 +371,12 @@ export default function JobBoardPage() {
 
   // Format salary for display
   const formatSalary = (min: number, max: number) => {
-    return `$${Math.round(min/1000)}k – $${Math.round(max/1000)}k`;
+    return `$${Math.round(min / 1000)}k – $${Math.round(max / 1000)}k`;
   };
 
   return (
     <div className="min-h-screen mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-
         {/* Main content: filter sidebar + job grid */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* LEFT: FILTER SECTION */}
@@ -379,10 +388,7 @@ export default function JobBoardPage() {
                   <SlidersHorizontal className="w-4 h-4 text-white" />
                   Filters
                 </h2>
-                <button 
-                  onClick={resetFilters}
-                  className="text-xs text-white hover:text-slate-600 transition"
-                >
+                <button onClick={resetFilters} className="text-xs text-white hover:text-slate-600 transition">
                   Reset all
                 </button>
               </div>
@@ -393,24 +399,22 @@ export default function JobBoardPage() {
                 <input
                   type="text"
                   placeholder="Job title, keyword..."
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange("search", e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="w-full bg-[#111110] border border-gray-600 rounded-lg py-2 pl-9 pr-4 text-sm placeholder:text-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition"
                 />
               </div>
 
               {/* Location filter */}
               <div className="mb-6">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-2">
-                  Location
-                </label>
+                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-2">Location</label>
                 <div className="relative">
                   <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white" />
                   <input
                     type="text"
                     placeholder="City or remote"
-                    value={filters.location}
-                    onChange={(e) => handleFilterChange("location", e.target.value)}
+                    value={locationInput}
+                    onChange={(e) => setLocationInput(e.target.value)}
                     className="w-full bg-[#111110] border border-gray-600 rounded-lg py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                   />
                 </div>
@@ -418,9 +422,7 @@ export default function JobBoardPage() {
 
               {/* Category dropdown */}
               <div className="mb-6">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-2">
-                  Category
-                </label>
+                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-2">Category</label>
                 <select
                   value={filters.category}
                   onChange={(e) => handleFilterChange("category", e.target.value)}
@@ -436,9 +438,7 @@ export default function JobBoardPage() {
 
               {/* Experience level pills */}
               <div className="mb-6">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">
-                  Experience level
-                </label>
+                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Experience level</label>
                 <div className="flex flex-wrap gap-2">
                   {["Entry", "Mid", "Senior", "Lead"].map((level) => (
                     <button
@@ -448,9 +448,7 @@ export default function JobBoardPage() {
                         handleCheckboxGroup("experience", level, !isSelected);
                       }}
                       className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                        !filters.experience.includes(level)
-                          ? "bg-slate-800 text-white border-slate-800"
-                          : "bg-slate-300 border-transparent hover:bg-slate-200 text-black"
+                        !filters.experience.includes(level) ? "bg-slate-800 text-white border-slate-800" : "bg-slate-300 border-transparent hover:bg-slate-200 text-black"
                       }`}
                     >
                       {level}
@@ -461,9 +459,7 @@ export default function JobBoardPage() {
 
               {/* Job type checkboxes */}
               <div className="mb-6">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">
-                  Job type
-                </label>
+                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Job type</label>
                 <div className="space-y-2">
                   {[
                     { label: "Full-time", value: "full-time", count: 5 },
@@ -472,10 +468,7 @@ export default function JobBoardPage() {
                     { label: "Remote", value: "remote", count: 3 },
                     { label: "Internship", value: "internship", count: 0 },
                   ].map(({ label, value, count }) => (
-                    <label
-                      key={value}
-                      className="flex items-center gap-2 text-sm text-white"
-                    >
+                    <label key={value} className="flex items-center gap-2 text-sm text-white">
                       <input
                         type="checkbox"
                         checked={filters.jobTypes.includes(value)}
@@ -483,9 +476,7 @@ export default function JobBoardPage() {
                         className="rounded border-slate-300 text-slate-600 focus:ring-slate-200 focus:ring-offset-0"
                       />
                       <span>{label}</span>
-                      <span className="text-xs text-white ml-auto">
-                        {jobsData.filter(j => j.type === value).length}
-                      </span>
+                      <span className="text-xs text-white ml-auto">{jobsData.filter((j) => j.type === value).length}</span>
                     </label>
                   ))}
                 </div>
@@ -494,12 +485,8 @@ export default function JobBoardPage() {
               {/* Salary range */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-medium uppercase tracking-wider text-white">
-                    Salary / year
-                  </label>
-                  <span className="text-xs bg-slate-800 px-2 py-0.5 rounded-full text-slate-200">
-                    {formatSalary(salaryRange.min, salaryRange.max)}
-                  </span>
+                  <label className="text-xs font-medium uppercase tracking-wider text-white">Salary / year</label>
+                  <span className="text-xs bg-slate-800 px-2 py-0.5 rounded-full text-slate-200">{formatSalary(salaryRange.min, salaryRange.max)}</span>
                 </div>
                 <div className="relative pt-4 px-1">
                   <input
@@ -529,20 +516,15 @@ export default function JobBoardPage() {
 
               {/* Date posted radio */}
               <div className="mb-4">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">
-                  Date posted
-                </label>
+                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Date posted</label>
                 <div className="space-y-1.5">
                   {[
-                    { label: "Any time", value: "any-time" },
+                    { label: "Any time", value: "any-time"},
                     { label: "Past 24 hours", value: "past-24h" },
                     { label: "Past week", value: "past-week" },
                     { label: "Past month", value: "past-month" },
                   ].map(({ label, value }) => (
-                    <label
-                      key={value}
-                      className="flex items-center gap-2 text-sm text-white"
-                    >
+                    <label key={value} className="flex items-center gap-2 text-sm text-white">
                       <input
                         type="radio"
                         name="datePosted"
@@ -566,24 +548,38 @@ export default function JobBoardPage() {
               <p className="text-sm text-slate-300 bg-slate-800 px-3 py-1.5 rounded-full shadow-sm border border-slate-800">
                 <span className="font-medium text-white">{filteredJobs.length}</span> jobs match
               </p>
-              {/* <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
-                <ArrowDownWideNarrow className="w-4 h-4 text-white" />
-                <span className="text-sm text-slate-600">Sort by</span>
-                <span className="text-sm font-medium text-slate-800">Newest</span>
-                <ChevronDown className="w-4 h-4 text-white ml-1" />
-              </div> */}
             </div>
 
             {/* Job cards grid */}
             {filteredJobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
                 {filteredJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col"
-                  >
-                    {/* Header with logo, title, type */}
-                    <div className="flex items-start gap-3">
+                  <div key={job.id} className={`cursor-pointer bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300`}>
+                    {/* Company */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-9 h-9 bg-primary/10 border border-primary/15 flex items-center justify-center font-bold text-[0.72rem] text-primary">{job.company.slice(0, 1)}</div>
+                      <span className="text-[0.78rem] text-muted tracking-wider">{job.company}</span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="font-syne font-bold text-[1.15rem] text-cream leading-[1.2] tracking-[-0.01em] mb-3.5 pr-10">{job.title}</h3>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 mb-5">
+                      {job.tags.map((tag) => (
+                        <span key={tag} className={`text-[0.65rem] px-3 py-1 border tracking-wider uppercase`}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-t-mist-900">
+                      <div className="font-syne font-extrabold text-[1.08rem] text-cream">{job.salary}</div>
+                      <div className="text-[0.75rem] text-muted">{job.location}</div>
+                    </div>
+
+                    {/* <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 shrink-0">
                         {job.logo}
                       </div>
@@ -598,12 +594,12 @@ export default function JobBoardPage() {
                       <JobTypeBadge type={job.type} />
                     </div>
 
-                    {/* Description */}
+                    
                     <p className="text-xs text-slate-500 mt-3 line-clamp-2">
                       {job.description}
                     </p>
 
-                    {/* Tags and salary */}
+                    
                     <div className="flex items-center justify-between mt-4">
                       <div className="flex gap-1 flex-wrap">
                         {job.tags.map((tag) => (
@@ -620,18 +616,18 @@ export default function JobBoardPage() {
                       </span>
                     </div>
 
-                    {/* Posted time */}
+                    
                     <div className="mt-3 text-[10px] text-white border-t border-slate-100 pt-2">
                       Posted {job.postedAt}
-                    </div>
+                    </div> */}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+              <div className="rounded-xl border border-gray-800 p-12 text-center">
                 <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-white mb-2">No jobs found</h3>
-                <p className="text-sm text-slate-500">Try adjusting your filters to see more results</p>
+                <p className="text-sm text-slate-300">Try adjusting your filters to see more results</p>
               </div>
             )}
           </main>
