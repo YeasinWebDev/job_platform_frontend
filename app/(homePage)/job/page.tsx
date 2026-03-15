@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { SlidersHorizontal, Bell, Search, MapPin, ChevronDown, X, ArrowDownWideNarrow, PenTool, Code, Camera, BarChart, Briefcase, Globe } from "lucide-react";
 import { useDebounce } from "use-debounce";
+import { getAllJobs } from "@/app/services/job/job.service";
+import { FilterState } from "@/types/jobTypes";
 
 // Define types for job posting
 interface Job {
@@ -164,31 +166,19 @@ const jobsData: Job[] = [
   },
 ];
 
-// Filter state interface
-interface FilterState {
-  search: string;
-  location: string;
-  category: string;
-  experience: string[];
-  jobTypes: string;
-  contact: string[];
-  salaryMin: number;
-  salaryMax: number;
-  datePosted: string;
-}
 
 // Badge component for job type
-const JobTypeBadge: React.FC<{ type: Job["type"] }> = ({ type }) => {
-  const styles = {
-    "full-time": "bg-emerald-50 text-emerald-700 border-emerald-200",
-    "part-time": "bg-blue-50 text-blue-700 border-blue-200",
-    contract: "bg-amber-50 text-amber-700 border-amber-200",
-    remote: "bg-purple-50 text-purple-700 border-purple-200",
-    internship: "bg-slate-50 text-white border-slate-200",
-  };
+// const JobTypeBadge: React.FC<{ type: Job["type"] }> = ({ type }) => {
+//   const styles = {
+//     "full-time": "bg-emerald-50 text-emerald-700 border-emerald-200",
+//     "part-time": "bg-blue-50 text-blue-700 border-blue-200",
+//     contract: "bg-amber-50 text-amber-700 border-amber-200",
+//     remote: "bg-purple-50 text-purple-700 border-purple-200",
+//     internship: "bg-slate-50 text-white border-slate-200",
+//   };
 
-  return <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${styles[type]}`}>{type}</span>;
-};
+//   return <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${styles[type]}`}>{type}</span>;
+// };
 
 // Main component
 export default function JobBoardPage() {
@@ -274,7 +264,7 @@ export default function JobBoardPage() {
   }, [filters.location]);
 
   // Handle checkbox groups
-  const handleCheckboxGroup = (key: "experience" | "contact" , value: string, checked: boolean) => {
+  const handleCheckboxGroup = (key: "experience" | "contact", value: string, checked: boolean) => {
     setFilters((prev) => {
       const current = [...prev[key]];
       const newValues = checked ? [...current, value] : current.filter((v) => v !== value);
@@ -320,6 +310,22 @@ export default function JobBoardPage() {
     router.push(pathname, { scroll: false });
   };
 
+  const getAllData = async () => {
+    try {
+      const res = await getAllJobs({
+        search: filters.search,
+        location: filters.location,
+        category: filters.category,
+        experience: filters.experience,
+        jobTypes: filters.jobTypes,
+        contact: filters.contact,
+        salaryMin: filters.salaryMin,
+        salaryMax: filters.salaryMax,
+        datePosted: filters.datePosted,
+      });
+    } catch (error) {}
+  };
+
   // Filter jobs based on current filters
   const filteredJobs = useMemo(() => {
     return jobsData.filter((job) => {
@@ -355,7 +361,7 @@ export default function JobBoardPage() {
           parttime: "part-time",
           internship: "internship",
         };
-        const mappedTypes = filters.contact.map(c => contactTypeMap[c]).filter(Boolean);
+        const mappedTypes = filters.contact.map((c) => contactTypeMap[c]).filter(Boolean);
         if (mappedTypes.length > 0 && !mappedTypes.includes(job.type)) {
           return false;
         }
