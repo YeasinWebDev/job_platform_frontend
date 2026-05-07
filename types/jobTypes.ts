@@ -9,3 +9,8 @@ export interface FilterState {
   salaryMax: number;
   datePosted: string;
 }
+
+export interface Category{
+  id: string,
+  name: string
+}

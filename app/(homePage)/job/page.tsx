@@ -5,7 +5,8 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { SlidersHorizontal, Bell, Search, MapPin, ChevronDown, X, ArrowDownWideNarrow, PenTool, Code, Camera, BarChart, Briefcase, Globe } from "lucide-react";
 import { useDebounce } from "use-debounce";
 import { getAllJobs } from "@/app/services/job/job.service";
-import { FilterState } from "@/types/jobTypes";
+import { Category, FilterState } from "@/types/jobTypes";
+import { getAllCategories } from "@/app/services/category/category.service";
 
 // Define types for job posting
 interface Job {
@@ -166,20 +167,6 @@ const jobsData: Job[] = [
   },
 ];
 
-
-// Badge component for job type
-// const JobTypeBadge: React.FC<{ type: Job["type"] }> = ({ type }) => {
-//   const styles = {
-//     "full-time": "bg-emerald-50 text-emerald-700 border-emerald-200",
-//     "part-time": "bg-blue-50 text-blue-700 border-blue-200",
-//     contract: "bg-amber-50 text-amber-700 border-amber-200",
-//     remote: "bg-purple-50 text-purple-700 border-purple-200",
-//     internship: "bg-slate-50 text-white border-slate-200",
-//   };
-
-//   return <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${styles[type]}`}>{type}</span>;
-// };
-
 // Main component
 export default function JobBoardPage() {
   const router = useRouter();
@@ -210,6 +197,8 @@ export default function JobBoardPage() {
   const [locationInput, setLocationInput] = useState(filters.location);
   const [debouncedSearch] = useDebounce(searchInput, 2000);
   const [debouncedLocation] = useDebounce(locationInput, 2000);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
 
   // Ref to skip initial URL update
   const isInitialMount = useRef(true);
@@ -310,8 +299,8 @@ export default function JobBoardPage() {
     router.push(pathname, { scroll: false });
   };
 
-  const getAllData = async () => {
-    try {
+  useEffect(() => {
+    const jobData = async () => {
       const res = await getAllJobs({
         search: filters.search,
         location: filters.location,
@@ -323,8 +312,21 @@ export default function JobBoardPage() {
         salaryMax: filters.salaryMax,
         datePosted: filters.datePosted,
       });
-    } catch (error) {}
-  };
+
+      setJobs(res);
+    };
+
+    jobData();
+  }, [filters]);
+
+  useEffect(() => {
+    const categoryData = async () => {
+      const res = await getAllCategories();
+      setCategoryList(res.data);
+    };
+    categoryData();
+  }, []);
+
 
   // Filter jobs based on current filters
   const filteredJobs = useMemo(() => {
@@ -397,6 +399,8 @@ export default function JobBoardPage() {
     return `$${Math.round(min / 1000)}k – $${Math.round(max / 1000)}k`;
   };
 
+  console.log(categoryList)
+
   return (
     <div className="min-h-screen mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -452,10 +456,11 @@ export default function JobBoardPage() {
                   className="w-full bg-[#111110] border text-white border-gray-600 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-gray-500 appearance-none"
                 >
                   <option value="">All Categories</option>
-                  <option value="Design">Design</option>
-                  <option value="Engineering">Engineering</option>
-                  <option value="Product">Product</option>
-                  <option value="Data">Data</option>
+                  {categoryList?.map((category) => (
+                    <option key={category.name} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 

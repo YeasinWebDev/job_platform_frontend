@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { loginUser, registerUser } from "@/app/services/auth/auth";
 import { FormState, Mode } from "@/types/loginTypes";
-
+import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
   const [mode, setMode] = useState<Mode>("signin");
@@ -18,6 +18,7 @@ export default function AuthPage() {
   const [remember, setRemember] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const f = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
@@ -35,12 +36,18 @@ export default function AuthPage() {
       setIsSubmitting(false);
       return toast.error("Please enter email and password");
     } else {
-      await loginUser(form.email, form.password);
+      let result = await loginUser(form.email, form.password);
 
-      // reset
-      setForm({ name: "", email: "", password: "", confirm: "" });
-      toast.success("Login Successful");
-      setIsSubmitting(false);
+      if (result.success) {
+        // reset
+        setForm({ name: "", email: "", password: "", confirm: "" });
+        toast.success("Login Successful");
+        setIsSubmitting(false);
+        router.push("/");
+      }else{
+        setIsSubmitting(false);
+        return toast.error(result.error);
+      }
     }
   };
 
@@ -69,7 +76,7 @@ export default function AuthPage() {
     "w-full bg-[#1c1c1c] border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-primary focus:bg-black/10";
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0a] text-white font-sans">
+    <div className="flex min-h-screen bg-[#0a0a0a] text-white">
       {/* ══ LEFT PANEL ══════════════════════════════════════════════════════ */}
       <div className="hidden lg:flex w-[44%] flex-shrink-0 flex-col justify-between p-10 border-r border-white/[0.07] relative overflow-hidden">
         {/* grid */}
@@ -94,7 +101,13 @@ export default function AuthPage() {
         />
 
         {/* brand */}
-        <motion.div className="relative z-10" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div
+          className="relative z-10 cursor-pointer"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          onClick={() => router.push("/")}
+        >
           <div className="w-9 h-9 bg-primary/60 rounded-md flex items-center justify-center font-black text-lg text-white">H</div>
           <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-white/60 mt-4">HirePeople</p>
         </motion.div>
@@ -275,9 +288,10 @@ export default function AuthPage() {
                         )}
                       </AnimatePresence>
                     </Label>
-                  <SubmitBtn type="submit" isSubmitting={isSubmitting}>Create Account</SubmitBtn>
+                    <SubmitBtn type="submit" isSubmitting={isSubmitting}>
+                      Create Account
+                    </SubmitBtn>
                   </form>
-
 
                   <p className="text-sm text-white/40 text-center mb-4">
                     Already have an account?{" "}
