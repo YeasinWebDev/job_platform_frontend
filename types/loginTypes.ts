@@ -3,6 +3,7 @@ export interface FormState {
   email: string;
   password: string;
   confirm: string;
+  role: string;
 }
  
 export type Mode = "signin" | "signup";

@@ -399,7 +399,7 @@ export default function JobBoardPage() {
     return `$${Math.round(min / 1000)}k – $${Math.round(max / 1000)}k`;
   };
 
-  console.log(categoryList)
+  console.log(jobs,"jobs")
 
   return (
     <div className="min-h-screen mt-20">

@@ -14,18 +14,21 @@ export default function AuthPage() {
     email: "",
     password: "",
     confirm: "",
+    role: "USER",
   });
   const [remember, setRemember] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const f = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  const f = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [key]: e.target.value });
+  };
 
   const switchMode = (m: Mode) => {
     if (m === mode) return;
     setMode(m);
-    setForm({ name: "", email: "", password: "", confirm: "" });
+    setForm({ name: "", email: "", password: "", confirm: "", role: "USER" });
   };
 
   const onLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -40,11 +43,11 @@ export default function AuthPage() {
 
       if (result.success) {
         // reset
-        setForm({ name: "", email: "", password: "", confirm: "" });
+        setForm({ name: "", email: "", password: "", confirm: "", role: "USER" });
         toast.success("Login Successful");
         setIsSubmitting(false);
         router.push("/");
-      }else{
+      } else {
         setIsSubmitting(false);
         return toast.error(result.error);
       }
@@ -55,16 +58,22 @@ export default function AuthPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (!form.email.trim() || !form.password.trim()) {
+    if (!form.email.trim() || !form.password.trim() || !form.name.trim() || !form.role.trim() || !form.confirm.trim()) {
       setIsSubmitting(false);
-      return toast.error("Please enter email and password");
+      return toast.error("Please enter all fields");
     } else {
-      await registerUser(form.name, form.email, form.password);
+      let result = await registerUser(form.name, form.email, form.password, form.role);
 
-      // reset
-      setForm({ name: "", email: "", password: "", confirm: "" });
-      toast.success("Registration Successful");
-      setIsSubmitting(false);
+      if (result.success) {
+        // reset
+        setForm({ name: "", email: "", password: "", confirm: "", role: "USER" });
+        toast.success("Registration Successful");
+        setIsSubmitting(false);
+        router.push("/");
+      } else {
+        setIsSubmitting(false);
+        return toast.error(result.error);
+      }
     }
   };
 
@@ -262,6 +271,14 @@ export default function AuthPage() {
                           {showPass ? "Hide" : "Show"}
                         </button>
                       </div>
+                    </Label>
+
+                    {/* role */}
+                    <Label text="Role">
+                      <select className={input} value={form.role} onChange={f("role")} style={{ backgroundColor: "#1c1c1c" }}>
+                        <option value="USER"> User </option>
+                        <option value="RECRUITER">Recruiter</option>
+                      </select>
                     </Label>
 
                     <Label text="Confirm password">
