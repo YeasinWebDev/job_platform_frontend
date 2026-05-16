@@ -25,7 +25,7 @@ export const loginUser = async (email: string, password: string) => {
         sameSite: "none",
       });
 
-      revalidateTag("getMe","default");
+      revalidateTag("getMe", "default");
 
       return result;
     } else {
@@ -76,14 +76,13 @@ export const logoutUser = async () => {
 export const getMe = async () => {
   // const getToken = await getCookie("authToken");
   try {
-    const response = await serverFetch.get('/user/me', {
+    const response = await serverFetch.get("/user/me", {
       next: {
         tags: ["getMe"],
       },
     });
     const result = await response.json();
 
-    console.log(result , "res")
     if (result.success) {
       return result.data;
     } else {
@@ -92,5 +91,25 @@ export const getMe = async () => {
   } catch (error) {
     console.log(error);
     return { error };
+  }
+};
+
+export const sendVerificationRequest = async () => {
+  try {
+    const response = await serverFetch.post("/auth/send-verification-email", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+    const result = await response.json();
+
+    if (result.success) {
+      return result.data;
+    } else {
+      return { error: result.message };
+    }
+  } catch (error) {
+    console.log(error);
   }
 };

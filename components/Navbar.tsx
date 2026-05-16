@@ -41,6 +41,17 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
     router.refresh();
   };
 
+  useEffect(() => {
+    const removerUser = async () => {
+      await logoutUser();
+      router.refresh();
+      toast.success("Session Expired, Please Login Again");
+    };
+    if (user.error === "jwt expired") {
+      removerUser();
+    }
+  }, [user]);
+
   return (
     <nav
       className={`fixed top-0 z-50 w-full border-b border-gray-800/50 transition-all duration-300 ${
@@ -88,6 +99,7 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
         {/* Mobile Menu */}
         <div className="lg:hidden">
           <Sheet>
+            {/* @ts-ignore */}
             <SheetTrigger asChild>
               <Button size="icon" variant="ghost" className="text-white hover:bg-white/10">
                 <Menu className="w-6 h-6" />

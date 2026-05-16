@@ -10,6 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { CheckCircle2, UserRound, XCircle } from "lucide-react";
+import { updateProfile } from "@/app/services/profile/profile.service";
+import toast from "react-hot-toast";
+import VerifyModal from "./VerifyModal";
+import { sendVerificationRequest } from "@/app/services/auth/auth";
 
 type Role = "USER" | "RECRUITER" | "ADMIN";
 
@@ -68,6 +72,7 @@ function ProfileMainPage({ user }: { user: UserType }) {
     recruiterLocation: user?.recruiter?.location || "",
     recruiterPhone: user?.recruiter?.phone || "",
   });
+  const [verifyOpen, setVerifyOpen] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({
@@ -105,6 +110,13 @@ function ProfileMainPage({ user }: { user: UserType }) {
       // TODO: Call your API here
       // Example:
       // await fetch("/api/profile/update", { method: "PATCH", body: JSON.stringify(formData) })
+      let ans = await updateProfile(formData);
+      console.log(ans, "ans");
+      if (ans.success) {
+        toast.success("Profile Updated Successfully");
+      }else{
+        toast.error(ans.message);
+      }
 
       console.log("Saving Profile Data:", formData);
 
@@ -119,14 +131,14 @@ function ProfileMainPage({ user }: { user: UserType }) {
       // TODO: Call your API here
       // Example:
       // await fetch("/api/profile/verify", { method: "PATCH" })
-
-      console.log("Verifying Profile Data");
-
-      setIsEditing(false);
+      let ans = await sendVerificationRequest();
+      setVerifyOpen(true);
     } catch (error) {
       console.log(error);
     }
   };
+
+  console.log(user,"user")
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4 md:p-8 space-y-6">
@@ -426,6 +438,8 @@ function ProfileMainPage({ user }: { user: UserType }) {
           </CardContent>
         </Card>
       )}
+
+      <VerifyModal open={verifyOpen} setOpen={setVerifyOpen} />
     </div>
   );
 }
