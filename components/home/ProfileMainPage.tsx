@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
@@ -107,19 +106,13 @@ function ProfileMainPage({ user }: { user: UserType }) {
 
   const handleSave = async () => {
     try {
-      // TODO: Call your API here
-      // Example:
-      // await fetch("/api/profile/update", { method: "PATCH", body: JSON.stringify(formData) })
       let ans = await updateProfile(formData);
-      console.log(ans, "ans");
+      
       if (ans.success) {
         toast.success("Profile Updated Successfully");
       }else{
         toast.error(ans.message);
       }
-
-      console.log("Saving Profile Data:", formData);
-
       setIsEditing(false);
     } catch (error) {
       console.log(error);
@@ -128,17 +121,19 @@ function ProfileMainPage({ user }: { user: UserType }) {
 
   const handleVerify = async () => {
     try {
-      // TODO: Call your API here
-      // Example:
-      // await fetch("/api/profile/verify", { method: "PATCH" })
       let ans = await sendVerificationRequest();
+      
+      if(ans === true){
+        toast.success("Please check your email for verification code");
+      }else{
+        toast.error("Something went wrong");
+      }
       setVerifyOpen(true);
     } catch (error) {
       console.log(error);
     }
   };
 
-  console.log(user,"user")
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4 md:p-8 space-y-6">
@@ -159,9 +154,9 @@ function ProfileMainPage({ user }: { user: UserType }) {
               <Button className="rounded-sm cursor-pointer bg-primary-foreground text-black" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button className="rounded-sm cursor-pointer bg-red-500/10 text-red-400 border-red-500/30" onClick={handleVerify}>
+              {!user?.isVerified && <Button className="rounded-sm cursor-pointer bg-red-500/10 text-red-400 border-red-500/30" onClick={handleVerify}>
                 Verify
-              </Button>
+              </Button>}
               <Button className="rounded-sm cursor-pointer" onClick={handleSave}>
                 Save Changes
               </Button>

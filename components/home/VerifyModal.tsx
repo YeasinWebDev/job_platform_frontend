@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { verifyUser } from "@/app/services/auth/auth";
 
 type VerifyModalProps = {
   open: boolean;
@@ -26,14 +27,14 @@ const VerifyModal = ({ open, setOpen }: VerifyModalProps) => {
 
   const handleVerify = async () => {
     try {
-      console.log(verifyCode);
+      let ans = await verifyUser(verifyCode)
 
-      // await verifyUser(verify)
-
-      toast.success("Verification request sent");
-
-      setOpen(false);
-      setVerifyCode("");
+      if (ans === true) {
+        toast.success("Verification successful");
+        setOpen(false);
+      }else{
+        toast.error("Verification failed");
+      }
     } catch (error) {
       console.log(error);
       toast.error("Verification failed");

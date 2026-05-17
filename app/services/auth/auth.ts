@@ -113,3 +113,25 @@ export const sendVerificationRequest = async () => {
     console.log(error);
   }
 };
+
+export const verifyUser = async (verifyCode: string) => {
+  try {
+    const response = await serverFetch.post("/auth/verify-email", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code:verifyCode }),
+      cache: "no-store",
+    });
+    const result = await response.json();
+
+    if (result.success) {
+      revalidateTag("getMe", "default");
+      return result.data;
+    } else {
+      return { error: result.message };
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
