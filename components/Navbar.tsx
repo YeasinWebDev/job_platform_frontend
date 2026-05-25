@@ -99,11 +99,8 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
         {/* Mobile Menu */}
         <div className="lg:hidden">
           <Sheet>
-            {/* @ts-ignore */}
-            <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="text-white hover:bg-white/10">
+            <SheetTrigger>
                 <Menu className="w-6 h-6" />
-              </Button>
             </SheetTrigger>
 
             <SheetContent side="right" className="w-[300px] bg-black border-l border-gray-800 text-white">

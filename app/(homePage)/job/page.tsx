@@ -1,177 +1,23 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { SlidersHorizontal, Bell, Search, MapPin, ChevronDown, X, ArrowDownWideNarrow, PenTool, Code, Camera, BarChart, Briefcase, Globe } from "lucide-react";
+import { SlidersHorizontal, Search, MapPin, Briefcase } from "lucide-react";
 import { useDebounce } from "use-debounce";
 import { getAllJobs } from "@/app/services/job/job.service";
-import { Category, FilterState } from "@/types/jobTypes";
+import { Category, FilterState, Job } from "@/types/jobTypes";
 import { getAllCategories } from "@/app/services/category/category.service";
-
-// Define types for job posting
-interface Job {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  type: "full-time" | "part-time" | "contract" | "remote" | "onsite" | "internship";
-  salary: string;
-  salaryMin: number;
-  salaryMax: number;
-  description: string;
-  tags: string[];
-  logo: React.ReactNode;
-  postedAt: string;
-  postedDate: Date;
-  category: string;
-  experience: "Entry" | "Mid" | "Senior" | "Lead";
-}
-
-// Extended sample job data with more variety
-const jobsData: Job[] = [
-  {
-    id: "1",
-    title: "Senior Product Designer",
-    company: "Figma",
-    location: "San Francisco, CA",
-    type: "full-time",
-    salary: "$130k – $150k",
-    salaryMin: 130000,
-    salaryMax: 150000,
-    description: "Lead product design for core design system and collaborate with product managers.",
-    tags: ["UI/UX", "Figma", "Design Systems"],
-    logo: <PenTool className="w-5 h-5" />,
-    postedAt: "2 days ago",
-    postedDate: new Date("2024-03-10"),
-    category: "Design",
-    experience: "Senior",
-  },
-  {
-    id: "2",
-    title: "Frontend Developer",
-    company: "Vercel",
-    location: "Remote",
-    type: "remote",
-    salary: "$120k – $160k",
-    salaryMin: 120000,
-    salaryMax: 160000,
-    description: "Build and maintain Next.js applications and contribute to open source.",
-    tags: ["React", "Next.js", "TypeScript"],
-    logo: <Code className="w-5 h-5" />,
-    postedAt: "1 day ago",
-    postedDate: new Date("2024-03-11"),
-    category: "Engineering",
-    experience: "Mid",
-  },
-  {
-    id: "3",
-    title: "Product Manager",
-    company: "Linear",
-    location: "New York, NY",
-    type: "full-time",
-    salary: "$140k – $180k",
-    salaryMin: 140000,
-    salaryMax: 180000,
-    description: "Drive product strategy and execution for our issue tracking platform.",
-    tags: ["Product", "Strategy", "Agile"],
-    logo: <Briefcase className="w-5 h-5" />,
-    postedAt: "3 days ago",
-    postedDate: new Date("2024-03-09"),
-    category: "Product",
-    experience: "Senior",
-  },
-  {
-    id: "4",
-    title: "UX Researcher",
-    company: "Adobe",
-    location: "San Jose, CA",
-    type: "contract",
-    salary: "$90k – $120k",
-    salaryMin: 90000,
-    salaryMax: 120000,
-    description: "Conduct user research and usability studies for creative cloud products.",
-    tags: ["Research", "Usability", "Interviews"],
-    logo: <Camera className="w-5 h-5" />,
-    postedAt: "5 days ago",
-    postedDate: new Date("2024-03-07"),
-    category: "Design",
-    experience: "Mid",
-  },
-  {
-    id: "5",
-    title: "Data Analyst",
-    company: "Stripe",
-    location: "Seattle, WA",
-    type: "full-time",
-    salary: "$110k – $140k",
-    salaryMin: 110000,
-    salaryMax: 140000,
-    description: "Analyze payment data and build dashboards for business insights.",
-    tags: ["SQL", "Python", "Tableau"],
-    logo: <BarChart className="w-5 h-5" />,
-    postedAt: "1 week ago",
-    postedDate: new Date("2024-03-05"),
-    category: "Data",
-    experience: "Entry",
-  },
-  {
-    id: "6",
-    title: "DevOps Engineer",
-    company: "GitHub",
-    location: "Remote",
-    type: "remote",
-    salary: "$135k – $165k",
-    salaryMin: 135000,
-    salaryMax: 165000,
-    description: "Manage infrastructure and improve CI/CD pipelines for millions of developers.",
-    tags: ["AWS", "Kubernetes", "Terraform"],
-    logo: <Globe className="w-5 h-5" />,
-    postedAt: "4 days ago",
-    postedDate: new Date("2024-03-08"),
-    category: "Engineering",
-    experience: "Senior",
-  },
-  {
-    id: "7",
-    title: "Junior UX Designer",
-    company: "Airbnb",
-    location: "San Francisco, CA",
-    type: "full-time",
-    salary: "$80k – $95k",
-    salaryMin: 80000,
-    salaryMax: 95000,
-    description: "Assist in creating beautiful and functional designs for our platform.",
-    tags: ["UI/UX", "Figma", "Prototyping"],
-    logo: <PenTool className="w-5 h-5" />,
-    postedAt: "2 days ago",
-    postedDate: new Date("2024-03-10"),
-    category: "Design",
-    experience: "Entry",
-  },
-  {
-    id: "8",
-    title: "Backend Engineer",
-    company: "Stripe",
-    location: "Remote",
-    type: "part-time",
-    salary: "$90k – $110k",
-    salaryMin: 90000,
-    salaryMax: 110000,
-    description: "Build scalable APIs and payment processing systems.",
-    tags: ["Go", "PostgreSQL", "Redis"],
-    logo: <Code className="w-5 h-5" />,
-    postedAt: "6 days ago",
-    postedDate: new Date("2024-03-06"),
-    category: "Engineering",
-    experience: "Mid",
-  },
-];
+import Loader from "@/components/Loader";
+import Link from "next/link";
 
 // Main component
 export default function JobBoardPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Initialize filter state from URL params
   const [filters, setFilters] = useState<FilterState>({
@@ -179,7 +25,7 @@ export default function JobBoardPage() {
     location: searchParams.get("location") || "",
     category: searchParams.get("category") || "",
     experience: searchParams.getAll("experience") || [],
-    jobTypes: searchParams.get("type") || "",
+    jobType: searchParams.get("type") || "",
     contact: searchParams.getAll("contact") || [],
     salaryMin: Number(searchParams.get("salaryMin")) || 40000,
     salaryMax: Number(searchParams.get("salaryMax")) || 160000,
@@ -212,7 +58,7 @@ export default function JobBoardPage() {
       if (newFilters.location) params.set("location", newFilters.location);
       if (newFilters.category) params.set("category", newFilters.category);
       newFilters.experience.forEach((exp) => params.append("experience", exp));
-      if (newFilters.jobTypes) params.set("type", newFilters.jobTypes);
+      if (newFilters.jobType) params.set("type", newFilters.jobType);
       newFilters.contact.forEach((contact) => params.append("contact", contact));
       if (newFilters.salaryMin !== 40000) params.set("salaryMin", newFilters.salaryMin.toString());
       if (newFilters.salaryMax !== 160000) params.set("salaryMax", newFilters.salaryMax.toString());
@@ -286,7 +132,7 @@ export default function JobBoardPage() {
       location: "",
       category: "",
       experience: [],
-      jobTypes: "",
+      jobType: "",
       contact: [],
       salaryMin: 40000,
       salaryMax: 160000,
@@ -300,24 +146,28 @@ export default function JobBoardPage() {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     const jobData = async () => {
       const res = await getAllJobs({
         search: filters.search,
         location: filters.location,
         category: filters.category,
         experience: filters.experience,
-        jobTypes: filters.jobTypes,
+        jobType: filters.jobType,
         contact: filters.contact,
         salaryMin: filters.salaryMin,
         salaryMax: filters.salaryMax,
         datePosted: filters.datePosted,
+        page: page,
       });
 
-      setJobs(res);
+      setJobs(res?.data?.jobs || []);
+      setTotalPages(res?.data?.meta?.totalPages || 1);
+      setIsLoading(false);
     };
 
     jobData();
-  }, [filters]);
+  }, [filters, page]);
 
   useEffect(() => {
     const categoryData = async () => {
@@ -327,79 +177,11 @@ export default function JobBoardPage() {
     categoryData();
   }, []);
 
-
-  // Filter jobs based on current filters
-  const filteredJobs = useMemo(() => {
-    return jobsData.filter((job) => {
-      // Search filter
-      if (filters.search && !job.title.toLowerCase().includes(filters.search.toLowerCase()) && !job.company.toLowerCase().includes(filters.search.toLowerCase())) {
-        return false;
-      }
-
-      // Location filter
-      if (filters.location && !job.location.toLowerCase().includes(filters.location.toLowerCase())) {
-        return false;
-      }
-
-      // Category filter
-      if (filters.category && job.category !== filters.category) {
-        return false;
-      }
-
-      // Experience filter
-      if (filters.experience.length > 0 && !filters.experience.includes(job.experience)) {
-        return false;
-      }
-
-      // Job type filter
-      if (filters.jobTypes && job.type !== filters.jobTypes) {
-        return false;
-      }
-
-      // Contact filter (maps to job types)
-      if (filters.contact.length > 0) {
-        const contactTypeMap: { [key: string]: string } = {
-          fulltime: "full-time",
-          parttime: "part-time",
-          internship: "internship",
-        };
-        const mappedTypes = filters.contact.map((c) => contactTypeMap[c]).filter(Boolean);
-        if (mappedTypes.length > 0 && !mappedTypes.includes(job.type)) {
-          return false;
-        }
-      }
-
-      // Salary filter
-      if (job.salaryMin < filters.salaryMin || job.salaryMax > filters.salaryMax) {
-        return false;
-      }
-
-      // Date posted filter
-      if (filters.datePosted !== "any-time") {
-        const daysAgo = Math.floor((new Date().getTime() - job.postedDate.getTime()) / (1000 * 3600 * 24));
-        switch (filters.datePosted) {
-          case "past-24h":
-            if (daysAgo > 1) return false;
-            break;
-          case "past-week":
-            if (daysAgo > 7) return false;
-            break;
-          case "past-month":
-            if (daysAgo > 30) return false;
-            break;
-        }
-      }
-
-      return true;
-    });
-  }, [filters]);
-
   // Format salary for display
-  const formatSalary = (min: number, max: number) => {
-    return `$${Math.round(min / 1000)}k – $${Math.round(max / 1000)}k`;
+  const formatSalary = (min: string, max: string) => {
+    return `$${Math.round(Number(min) / 1000)}k – $${Math.round(Number(max) / 1000)}k`;
   };
 
-  console.log(jobs,"jobs")
 
   return (
     <div className="min-h-screen mt-20">
@@ -498,8 +280,8 @@ export default function JobBoardPage() {
                         type="radio"
                         name="jobType"
                         value={value}
-                        checked={filters.jobTypes === value}
-                        onChange={(e) => handleFilterChange("jobTypes", e.target.value)}
+                        checked={filters.jobType === value}
+                        onChange={(e) => handleFilterChange("jobType", e.target.value)}
                         className="text-slate-600 border-slate-300 focus:ring-slate-200"
                       />
                       <span>{label}</span>
@@ -587,47 +369,53 @@ export default function JobBoardPage() {
             </div>
           </aside>
 
-          {/* RIGHT: JOB LISTINGS */}
-          <main className="flex-1 min-w-0">
-            {/* Results header and sort */}
-            <div className="flex items-center justify-between mb-5">
-              <p className="text-sm text-slate-300 bg-slate-800 px-3 py-1.5 rounded-full shadow-sm border border-slate-800">
-                <span className="font-medium text-white">{filteredJobs.length}</span> jobs match
-              </p>
+          {isLoading ? (
+            <div className="w-full flex items-center justify-center">
+            <Loader/>
             </div>
+          ) : (
+            <>
+              {/* RIGHT: JOB LISTINGS */}
+              <main className="flex-1 min-w-0">
+                {/* Results header and sort */}
+                <div className="flex items-center justify-between mb-5">
+                  <p className="text-sm text-slate-300 bg-slate-800 px-3 py-1.5 rounded-full shadow-sm border border-slate-800">
+                    <span className="font-medium text-white">{jobs.length}</span> jobs match
+                  </p>
+                </div>
 
-            {/* Job cards grid */}
-            {filteredJobs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
-                {filteredJobs.map((job) => (
-                  <div key={job.id} className={`cursor-pointer bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300`}>
-                    {/* Company */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-9 h-9 bg-primary/10 border border-primary/15 flex items-center justify-center font-bold text-[0.72rem] text-primary">
-                        {job.company.slice(0, 1)}
-                      </div>
-                      <span className="text-[0.78rem] text-muted tracking-wider">{job.company}</span>
-                    </div>
+                {/* Job cards grid */}
+                {jobs.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
+                    {jobs.map((job) => (
+                      <Link href={`/job/${job.id}`} key={job.id} className={`cursor-pointer bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300 h-[16rem]`}>
+                        {/* Company */}
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-9 h-9 bg-primary/10 border border-primary/15 flex items-center justify-center font-bold text-[0.72rem] text-primary">
+                            {job?.recruiter?.companyName?.slice(0, 1)}
+                          </div>
+                          <span className="text-[0.78rem] text-muted tracking-wider">{job?.recruiter?.companyName}</span>
+                        </div>
 
-                    {/* Title */}
-                    <h3 className="font-syne font-bold text-[1.15rem] text-cream leading-[1.2] tracking-[-0.01em] mb-3.5 pr-10">{job.title}</h3>
+                        {/* Title */}
+                        <h3 className="font-syne font-bold text-[1.15rem] text-cream leading-[1.2] tracking-[-0.01em] mb-3.5 pr-10">{job?.title}</h3>
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2 mb-5">
-                      {job.tags.map((tag) => (
-                        <span key={tag} className={`text-[0.65rem] px-3 py-1 border tracking-wider uppercase`}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-2 mb-5">
+                          {job?.skills?.map((tag) => (
+                            <span key={tag} className={`text-[0.65rem] px-3 py-1 border tracking-wider uppercase`}>
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
 
-                    {/* Footer */}
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-t-mist-900">
-                      <div className="font-syne font-extrabold text-[1.08rem] text-cream">{job.salary}</div>
-                      <div className="text-[0.75rem] text-muted">{job.location}</div>
-                    </div>
+                        {/* Footer */}
+                        <div className="flex justify-between items-center mt-4 pt-4 border-t border-t-mist-900 absolute bottom-5 w-[80%]">
+                          <div className="font-syne font-extrabold text-[1.08rem] text-cream">{formatSalary(job?.minSalary, job?.maxSalary)}</div>
+                          <div className="text-[0.75rem] text-muted">{job?.location}</div>
+                        </div>
 
-                    {/* <div className="flex items-start gap-3">
+                        {/* <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 shrink-0">
                         {job.logo}
                       </div>
@@ -668,17 +456,50 @@ export default function JobBoardPage() {
                     <div className="mt-3 text-[10px] text-white border-t border-slate-100 pt-2">
                       Posted {job.postedAt}
                     </div> */}
+                      </Link>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-gray-800 p-12 text-center">
-                <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">No jobs found</h3>
-                <p className="text-sm text-slate-300">Try adjusting your filters to see more results</p>
-              </div>
-            )}
-          </main>
+                ) : (
+                  <div className="rounded-xl border border-gray-800 p-12 text-center">
+                    <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-white mb-2">No jobs found</h3>
+                    <p className="text-sm text-slate-300">Try adjusting your filters to see more results</p>
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-10 flex-wrap">
+                    <button
+                      disabled={page === 1}
+                      onClick={() => setPage((prev) => prev - 1)}
+                      className="px-4 py-2 border border-gray-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#1b1b1a] transition cursor-pointer"
+                    >
+                      Previous
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`w-10 h-10 border cursor-pointer transition ${page === p ? "bg-white text-black border-white" : "border-gray-700 text-white hover:bg-[#1b1b1a]"}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+
+                    <button
+                      disabled={page === totalPages}
+                      onClick={() => setPage((prev) => prev + 1)}
+                      className="px-4 py-2 border border-gray-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#1b1b1a] transition cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </main>
+            </>
+          )}
         </div>
       </div>
     </div>

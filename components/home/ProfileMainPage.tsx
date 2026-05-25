@@ -13,38 +13,9 @@ import { updateProfile } from "@/app/services/profile/profile.service";
 import toast from "react-hot-toast";
 import VerifyModal from "./VerifyModal";
 import { sendVerificationRequest } from "@/app/services/auth/auth";
+import { UserType } from "@/types/jobTypes";
 
-type Role = "USER" | "RECRUITER" | "ADMIN";
 
-type UserType = {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  isVerified: boolean;
-  createdAt: string;
-  updatedAt: string;
-
-  userInfo?: {
-    about?: string | null;
-    image?: string | null;
-    website?: string | null;
-    location?: string | null;
-    phone?: string | null;
-    linkedin?: string | null;
-    github?: string | null;
-    resume?: string | null;
-  } | null;
-
-  recruiter?: {
-    about?: string | null;
-    companyName?: string | null;
-    companyImage?: string | null;
-    website?: string | null;
-    location?: string | null;
-    phone?: string | null;
-  } | null;
-};
 
 function ProfileMainPage({ user }: { user: UserType }) {
   const [isEditing, setIsEditing] = useState(false);
