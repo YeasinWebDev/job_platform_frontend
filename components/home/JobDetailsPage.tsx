@@ -9,6 +9,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { getJobById } from "@/app/services/job/job.service";
 import Loader from "../Loader";
+import toast from "react-hot-toast";
 
 export default function JobDetailsPage({ id = "1", user }: { id: string; user: UserType }) {
   const [job, setJob] = useState<Job>();
@@ -59,6 +60,20 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
   const formatSalary = (min: string, max: string) => {
     return `$${Number(min) / 1000}k - $${Number(max) / 1000}k`;
   };
+
+  const handleApply = async () => {
+    // @ts-ignore
+    if(user.error){
+      toast.error("Please Login to Apply")
+    }
+    try {
+      // await applyForJob(id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // console.log(user,"user")
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white px-6 pt-32 pb-10">
@@ -169,18 +184,18 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
                 <strong>Duration:</strong> {job?.Duration}
               </p>
               <p>
-                <strong>Start Date:</strong> {job?.startDate}
+                <strong>Start Date:</strong> {new Date(job?.startDate || "").toLocaleDateString("en-GB")}
               </p>
               <p>
-                <strong>Expiry:</strong> {job?.expiresAt}
+                <strong>Expiry:</strong> {new Date(job?.expiresAt || "").toLocaleDateString("en-GB")}
               </p>
               <p>
-                <strong>Posted:</strong> {job?.createdAt}
+                <strong>Posted:</strong> {new Date(job?.createdAt || "").toLocaleDateString("en-GB")}
               </p>
             </div>
 
             {/* Apply Button */}
-            <button className="w-full bg-white text-black py-3 rounded-md-xl font-semibold hover:bg-gray-200 transition rounded-md">
+            <button onClick={handleApply} className="w-full bg-white text-black py-3 rounded-md-xl font-semibold hover:bg-gray-200 transition rounded-md cursor-pointer">
               {loading ? <Loader2 className="animate-spin mx-auto" /> : "Apply Now"}
             </button>
           </div>

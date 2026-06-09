@@ -9,6 +9,9 @@ import { Category, FilterState, Job } from "@/types/jobTypes";
 import { getAllCategories } from "@/app/services/category/category.service";
 import Loader from "@/components/Loader";
 import Link from "next/link";
+import JobFilter from "@/components/home/job/JobFilter";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 // Main component
 export default function JobBoardPage() {
@@ -27,7 +30,7 @@ export default function JobBoardPage() {
     experience: searchParams.getAll("experience") || [],
     jobType: searchParams.get("type") || "",
     contact: searchParams.getAll("contact") || [],
-    salaryMin: Number(searchParams.get("salaryMin")) || 40000,
+    salaryMin: Number(searchParams.get("salaryMin")) || 0,
     salaryMax: Number(searchParams.get("salaryMax")) || 160000,
     datePosted: searchParams.get("datePosted") || "any-time",
   });
@@ -134,12 +137,12 @@ export default function JobBoardPage() {
       experience: [],
       jobType: "",
       contact: [],
-      salaryMin: 40000,
+      salaryMin: 0,
       salaryMax: 160000,
       datePosted: "any-time",
     };
     setFilters(resetState);
-    setSalaryRange({ min: 40000, max: 160000 });
+    setSalaryRange({ min: 0, max: 160000 });
     setSearchInput("");
     setLocationInput("");
     router.push(pathname, { scroll: false });
@@ -182,6 +185,7 @@ export default function JobBoardPage() {
     return `$${Math.round(Number(min) / 1000)}k – $${Math.round(Number(max) / 1000)}k`;
   };
 
+  // console.log(jobs,"jobs")
 
   return (
     <div className="min-h-screen mt-20">
@@ -189,192 +193,52 @@ export default function JobBoardPage() {
         {/* Main content: filter sidebar + job grid */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* LEFT: FILTER SECTION */}
-          <aside className="lg:w-80 shrink-0">
-            <div className="bg-mist rounded-xl shadow-sm border border-gray-700 p-5 sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto no-scrollbar">
-              {/* Filter header */}
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="font-medium text-base flex items-center gap-2 text-white">
-                  <SlidersHorizontal className="w-4 h-4 text-white" />
-                  Filters
-                </h2>
-                <button onClick={resetFilters} className="text-xs text-white hover:text-slate-600 transition">
-                  Reset all
-                </button>
-              </div>
+          <div className="lg:w-80 shrink-0 hidden lg:block">
+            <JobFilter
+              resetFilters={resetFilters}
+              categoryList={categoryList}
+              searchInput={searchInput}
+              setSearchInput={setSearchInput}
+              locationInput={locationInput}
+              setLocationInput={setLocationInput}
+              handleFilterChange={handleFilterChange}
+              handleCheckboxGroup={handleCheckboxGroup}
+              salaryRange={salaryRange}
+              handleSalaryChange={handleSalaryChange}
+              formatSalary={formatSalary}
+              filters={filters}
+            />
+          </div>
 
-              {/* Search input */}
-              <div className="relative mb-6">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white" />
-                <input
-                  type="text"
-                  placeholder="Job title, keyword..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full bg-[#111110] border border-gray-600 rounded-lg py-2 pl-9 pr-4 text-sm placeholder:text-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition"
-                />
+          <Sheet>
+            <SheetTrigger asChild className="lg:hidden">
+              <div className="flex items-end justify-end">
+                <Button className='p-4 rounded'>Filters</Button>
               </div>
+            </SheetTrigger>
+            <SheetContent side="left" className="lg:hidden bg-black">
+              <JobFilter
+                resetFilters={resetFilters}
+                categoryList={categoryList}
+                searchInput={searchInput}
+                setSearchInput={setSearchInput}
+                locationInput={locationInput}
+                setLocationInput={setLocationInput}
+                handleFilterChange={handleFilterChange}
+                handleCheckboxGroup={handleCheckboxGroup}
+                salaryRange={salaryRange}
+                handleSalaryChange={handleSalaryChange}
+                formatSalary={formatSalary}
+                filters={filters}
+              />
+            </SheetContent>
+          </Sheet>
 
-              {/* Location filter */}
-              <div className="mb-6">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-2">Location</label>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white" />
-                  <input
-                    type="text"
-                    placeholder="City or remote"
-                    value={locationInput}
-                    onChange={(e) => setLocationInput(e.target.value)}
-                    className="w-full bg-[#111110] border border-gray-600 rounded-lg py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
-                  />
-                </div>
-              </div>
-
-              {/* Category dropdown */}
-              <div className="mb-6">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-2">Category</label>
-                <select
-                  value={filters.category}
-                  onChange={(e) => handleFilterChange("category", e.target.value)}
-                  className="w-full bg-[#111110] border text-white border-gray-600 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-gray-500 appearance-none"
-                >
-                  <option value="">All Categories</option>
-                  {categoryList?.map((category) => (
-                    <option key={category.name} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Experience level pills */}
-              <div className="mb-6">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Experience level</label>
-                <div className="flex flex-wrap gap-2">
-                  {["Entry", "Mid", "Senior", "Lead"].map((level) => (
-                    <button
-                      key={level}
-                      onClick={() => {
-                        const isSelected = filters.experience.includes(level);
-                        handleCheckboxGroup("experience", level, !isSelected);
-                      }}
-                      className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                        !filters.experience.includes(level) ? "bg-slate-800 text-white border-slate-800" : "bg-slate-300 border-transparent hover:bg-slate-200 text-black"
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Job type radio buttons */}
-              <div className="mb-6">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Job type</label>
-                <div className="space-y-2">
-                  {[
-                    { label: "Remote", value: "remote" },
-                    { label: "Onsite", value: "onsite" },
-                  ].map(({ label, value }) => (
-                    <label key={value} className="flex items-center gap-2 text-sm text-white">
-                      <input
-                        type="radio"
-                        name="jobType"
-                        value={value}
-                        checked={filters.jobType === value}
-                        onChange={(e) => handleFilterChange("jobType", e.target.value)}
-                        className="text-slate-600 border-slate-300 focus:ring-slate-200"
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="mb-6">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Contact</label>
-                <div className="space-y-2">
-                  {[
-                    { label: "FullTime", value: "fulltime" },
-                    { label: "PartTime", value: "parttime" },
-                    { label: "Internship", value: "internship" },
-                  ].map(({ label, value }) => (
-                    <label key={value} className="flex items-center gap-2 text-sm text-white">
-                      <input
-                        type="checkbox"
-                        checked={filters.contact.includes(value)}
-                        onChange={(e) => handleCheckboxGroup("contact", value, e.target.checked)}
-                        className="rounded border-slate-300 text-slate-600 focus:ring-slate-200 focus:ring-offset-0"
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Salary range */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-medium uppercase tracking-wider text-white">Salary / year</label>
-                  <span className="text-xs bg-slate-800 px-2 py-0.5 rounded-full text-slate-200">{formatSalary(salaryRange.min, salaryRange.max)}</span>
-                </div>
-                <div className="relative pt-4 px-1">
-                  <input
-                    type="range"
-                    min="40000"
-                    max="160000"
-                    step="5000"
-                    value={salaryRange.min}
-                    onChange={(e) => handleSalaryChange("min", Number(e.target.value))}
-                    className="absolute w-full h-1.5 bg-slate-800 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-200 [&::-webkit-slider-thumb]:cursor-pointer"
-                  />
-                  <input
-                    type="range"
-                    min="40000"
-                    max="160000"
-                    step="5000"
-                    value={salaryRange.max}
-                    onChange={(e) => handleSalaryChange("max", Number(e.target.value))}
-                    className="absolute w-full h-1.5 bg-transparent rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-200 [&::-webkit-slider-thumb]:cursor-pointer"
-                  />
-                  <div className="flex justify-between mt-8 text-xs text-white">
-                    <span>$40k</span>
-                    <span>$160k+</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Date posted radio */}
-              <div className="mb-4">
-                <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Date posted</label>
-                <div className="space-y-1.5">
-                  {[
-                    { label: "Any time", value: "any-time" },
-                    { label: "Past 24 hours", value: "past-24h" },
-                    { label: "Past week", value: "past-week" },
-                    { label: "Past month", value: "past-month" },
-                  ].map(({ label, value }) => (
-                    <label key={value} className="flex items-center gap-2 text-sm text-white">
-                      <input
-                        type="radio"
-                        name="datePosted"
-                        value={value}
-                        checked={filters.datePosted === value}
-                        onChange={(e) => handleFilterChange("datePosted", e.target.value)}
-                        className="text-slate-500 border-slate-300 focus:ring-slate-200"
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {isLoading ? (
-            <div className="w-full flex items-center justify-center">
-            <Loader/>
-            </div>
-          ) : (
-            <>
+          {isLoading && <div className="w-full flex items-center justify-center">
+            <Loader />
+          </div>}
+          {
+            !isLoading && <>
               {/* RIGHT: JOB LISTINGS */}
               <main className="flex-1 min-w-0">
                 {/* Results header and sort */}
@@ -499,7 +363,7 @@ export default function JobBoardPage() {
                 )}
               </main>
             </>
-          )}
+          }
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { getCookie } from "./app/services/auth/tokenHandler";
 export async function middleware(request: NextRequest) {
   const token = await getCookie("authToken");
 
-const privateRoute = ['/profile']
+  const privateRoute = ['/profile', '/dashboard']
 
   // Current path
   const { pathname } = request.nextUrl;
@@ -14,8 +14,8 @@ const privateRoute = ['/profile']
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-    // If user is not logged in and tries to visit private routes
-  if (!token && privateRoute.includes(pathname)) {
+  // If user is not logged in and tries to visit private routes
+  if (!token && privateRoute.some(route => pathname.startsWith(route))) {
     return NextResponse.redirect(new URL("/auth", request.url));
   }
 
