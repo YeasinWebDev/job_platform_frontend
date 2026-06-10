@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { SlidersHorizontal, Search, MapPin, Briefcase } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { useDebounce } from "use-debounce";
 import { getAllJobs } from "@/app/services/job/job.service";
 import { Category, FilterState, Job } from "@/types/jobTypes";
@@ -252,7 +252,10 @@ export default function JobBoardPage() {
                 {jobs.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
                     {jobs.map((job) => (
-                      <Link href={`/job/${job.id}`} key={job.id} className={`cursor-pointer bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300 h-[16rem]`}>
+                      <Link href={`/job/${job.id}`} key={job.id} className={`cursor-pointer relative bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300 h-64`}>
+                        <div className="text-[0.7rem] text-red-400 absolute top-10 right-10">
+                          Expires: {new Date(job.expiresAt).toLocaleDateString()}
+                        </div>
                         {/* Company */}
                         <div className="flex items-center gap-3 mb-4">
                           <div className="w-9 h-9 bg-primary/10 border border-primary/15 flex items-center justify-center font-bold text-[0.72rem] text-primary">
@@ -278,48 +281,6 @@ export default function JobBoardPage() {
                           <div className="font-syne font-extrabold text-[1.08rem] text-cream">{formatSalary(job?.minSalary, job?.maxSalary)}</div>
                           <div className="text-[0.75rem] text-muted">{job?.location}</div>
                         </div>
-
-                        {/* <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 shrink-0">
-                        {job.logo}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-slate-800 truncate">
-                          {job.title}
-                        </h3>
-                        <p className="text-sm text-slate-500 truncate">
-                          {job.company} · {job.location}
-                        </p>
-                      </div>
-                      <JobTypeBadge type={job.type} />
-                    </div>
-
-                    
-                    <p className="text-xs text-slate-500 mt-3 line-clamp-2">
-                      {job.description}
-                    </p>
-
-                    
-                    <div className="flex items-center justify-between mt-4">
-                      <div className="flex gap-1 flex-wrap">
-                        {job.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-xs font-medium text-white">
-                        {job.salary}
-                      </span>
-                    </div>
-
-                    
-                    <div className="mt-3 text-[10px] text-white border-t border-slate-100 pt-2">
-                      Posted {job.postedAt}
-                    </div> */}
                       </Link>
                     ))}
                   </div>

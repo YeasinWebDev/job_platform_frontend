@@ -1,16 +1,13 @@
 import { Category } from '@/types/jobTypes';
 import { MapPin, Search, SlidersHorizontal } from 'lucide-react';
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-
 
 function JobFilter({ resetFilters, categoryList, searchInput, setSearchInput, locationInput, setLocationInput, handleFilterChange, handleCheckboxGroup, salaryRange, handleSalaryChange, formatSalary, filters }: any) {
     return (
         <aside className="lg:w-80 shrink-0 relative">
-            <div className="bg-mist rounded-xl shadow-sm border border-gray-700 p-5 ">
+            <div className="bg-mist rounded-xl shadow-sm border border-gray-700">
                 {/* Filter header */}
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-5 p-5">
                     <h2 className="font-medium text-base flex items-center gap-2 text-white">
                         <SlidersHorizontal className="w-4 h-4 text-white" />
                         Filters
@@ -20,7 +17,7 @@ function JobFilter({ resetFilters, categoryList, searchInput, setSearchInput, lo
                     </button>
                 </div>
 
-                <div className='relative max-h-[calc(100vh-3rem)] overflow-y-auto no-scrollbar'>
+                <div className='relative max-h-[calc(100vh-3rem)] overflow-y-auto no-scrollbar pb-5 px-5'>
                     {/* Search input */}
                     <div className="relative mb-6 mt-6">
                         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white" />
@@ -29,7 +26,7 @@ function JobFilter({ resetFilters, categoryList, searchInput, setSearchInput, lo
                             placeholder="Job title, keyword..."
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
-                            className="w-full bg-[#111110] border border-gray-600 rounded-lg py-2 pl-9 pr-4 text-sm placeholder:text-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition"
+                            className="w-full bg-[#111110] border border-gray-600 rounded-md py-2 pl-9 pr-4 text-sm placeholder:text-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition"
                         />
                     </div>
 
@@ -43,7 +40,7 @@ function JobFilter({ resetFilters, categoryList, searchInput, setSearchInput, lo
                                 placeholder="City or remote"
                                 value={locationInput}
                                 onChange={(e) => setLocationInput(e.target.value)}
-                                className="w-full bg-[#111110] border border-gray-600 rounded-lg py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                className="w-full bg-[#111110] border border-gray-600 rounded-md py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                             />
                         </div>
                     </div>
@@ -54,7 +51,7 @@ function JobFilter({ resetFilters, categoryList, searchInput, setSearchInput, lo
                         <select
                             value={filters.category}
                             onChange={(e) => handleFilterChange("category", e.target.value)}
-                            className="w-full bg-[#111110] border text-white border-gray-600 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-gray-500 appearance-none"
+                            className="w-full bg-[#111110] border text-white border-gray-600 rounded-md px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-gray-500 appearance-none"
                         >
                             <option value="">All Categories</option>
                             {categoryList?.map((category: Category) => (
@@ -161,7 +158,7 @@ function JobFilter({ resetFilters, categoryList, searchInput, setSearchInput, lo
                     </div>
 
                     {/* Date posted radio */}
-                    <div className="mb-10">
+                    {/* <div className="mb-10">
                         <label className="text-xs font-medium uppercase tracking-wider text-white block mb-3">Date posted</label>
                         <div className="space-y-1.5">
                             {[
@@ -183,7 +180,7 @@ function JobFilter({ resetFilters, categoryList, searchInput, setSearchInput, lo
                                 </label>
                             ))}
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </aside>

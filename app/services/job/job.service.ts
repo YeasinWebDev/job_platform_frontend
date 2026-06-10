@@ -2,7 +2,7 @@
 
 import { serverFetch } from "@/lib/server-fetch";
 import { FilterState } from "@/types/jobTypes";
-import { revalidateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 export const getAllJobs = async ({ page ,search, location, category, experience, jobType, contact, salaryMin, salaryMax, datePosted }: FilterState) => {
   try {
@@ -26,6 +26,9 @@ export const getJobById = async (id: string) => {
   try {
     const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/job/${id}`, {
       cache: "no-store",
+      next:{
+        tags:["job"]
+      }
     });
     const data = await result.json();
     return data;
@@ -49,3 +52,44 @@ export const createJob = async (payload: any) => {
     console.log(error);
   }
 };
+
+
+export const MyCreatedJobs = async () => {
+  try {
+    const result = await serverFetch.get('/job/my-created-jobs',{
+      cache: "no-store",
+      next:{
+        tags:["job"]
+      }
+    });
+    const data = await result.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const updateJobStatus = async (id: string , status:string) => {
+  try {
+    const result = await serverFetch.put(`/job/update-job-status/${id}`,{
+      body:JSON.stringify({status}),
+      headers:{
+        "Content-Type": "application/json"
+      },
+    });
+    const data = await result.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const deleteJob = async (id: string) => {
+  try {
+    const result = await serverFetch.delete(`/job/${id}`);
+    const data = await result.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}

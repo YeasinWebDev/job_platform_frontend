@@ -11,24 +11,27 @@ const serverFetchHelper = async (endpoint: string, options: RequestInit): Promis
   // }
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+    ...rest,
     headers: {
-      authorization: accessToken ? `${accessToken?.value}` : "",
+      "Content-Type": "application/json",
+      ...(accessToken?.value && {
+        authorization: `Bearer ${accessToken.value}`,
+      }),
       ...headers,
     },
-    ...rest,
   });
 
   return response;
 };
 
-export const serverFetch ={
-    get: (endpoint: string, options: RequestInit={}): Promise<Response> => serverFetchHelper(endpoint, {...options, method: "GET" }),
+export const serverFetch = {
+  get: (endpoint: string, options: RequestInit = {}): Promise<Response> => serverFetchHelper(endpoint, { ...options, method: "GET" }),
 
-    post: (endpoint: string, options: RequestInit={}): Promise<Response> => serverFetchHelper(endpoint, {...options, method: "POST" }),
+  post: (endpoint: string, options: RequestInit = {}): Promise<Response> => serverFetchHelper(endpoint, { ...options, method: "POST" }),
 
-    put: (endpoint: string, options: RequestInit={}): Promise<Response> => serverFetchHelper(endpoint, {...options, method: "PUT" }),
+  put: (endpoint: string, options: RequestInit = {}): Promise<Response> => serverFetchHelper(endpoint, { ...options, method: "PUT" }),
 
-    patch: (endpoint: string, options: RequestInit={}): Promise<Response> => serverFetchHelper(endpoint, {...options, method: "PATCH" }),
-    
-    delete: (endpoint: string, options: RequestInit={}): Promise<Response> => serverFetchHelper(endpoint, {...options, method: "DELETE" }),
-}
+  patch: (endpoint: string, options: RequestInit = {}): Promise<Response> => serverFetchHelper(endpoint, { ...options, method: "PATCH" }),
+
+  delete: (endpoint: string, options: RequestInit = {}): Promise<Response> => serverFetchHelper(endpoint, { ...options, method: "DELETE" }),
+};

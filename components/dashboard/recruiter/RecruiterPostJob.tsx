@@ -1,5 +1,6 @@
 import { getAllCategories } from '@/app/services/category/category.service';
 import { createJob } from '@/app/services/job/job.service';
+import { createPayment } from '@/app/services/payments/payments.service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -96,27 +97,33 @@ function RecruiterPostJob({ user }: { user: UserType }) {
         // console.log("FINAL PAYLOAD:", payload);
         setIsSubmitting(true)
         try {
-            await createJob(payload);
-            toast.success("Job created successfully");
-            setJobForm({
-                title: "",
-                category: "",
-                location: "",
-                vacancies: 1,
-                jobType: "REMOTE",
-                contract: "FULLTIME",
-                minSalary: "",
-                maxSalary: "",
-                description: "",
-                requirements: "",
-                Who_can_apply: "",
-                benefits: "",
-                startDate: "",
-                expiresAt: "",
-                experienceLevel: "Senior",
-                skills: "",
-            });
-            router.push("/job")
+            let { data, error } = await createJob(payload);
+            if (error) {
+                toast.error(error)
+            }
+            else {
+                let ans = await createPayment(5000, data.id)
+                toast.success("Job created successfully");
+                setJobForm({
+                    title: "",
+                    category: "",
+                    location: "",
+                    vacancies: 1,
+                    jobType: "REMOTE",
+                    contract: "FULLTIME",
+                    minSalary: "",
+                    maxSalary: "",
+                    description: "",
+                    requirements: "",
+                    Who_can_apply: "",
+                    benefits: "",
+                    startDate: "",
+                    expiresAt: "",
+                    experienceLevel: "Senior",
+                    skills: "",
+                });
+                window.location.href = ans?.data?.paymentUrl
+            }
         } catch (error) {
             console.log(error, "error")
         } finally {
