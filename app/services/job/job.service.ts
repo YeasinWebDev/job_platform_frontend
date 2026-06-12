@@ -54,9 +54,9 @@ export const createJob = async (payload: any) => {
 };
 
 
-export const MyCreatedJobs = async () => {
+export const MyCreatedJobs = async (page:number,search:string) => {
   try {
-    const result = await serverFetch.get('/job/my-created-jobs',{
+    const result = await serverFetch.get(`/job/my-created-jobs?page=${page}&limit=3&search=${search}`,{
       cache: "no-store",
       next:{
         tags:["job"]
