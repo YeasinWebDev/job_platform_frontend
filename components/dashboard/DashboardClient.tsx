@@ -214,8 +214,6 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
     ]
   });
 
-  console.log(initialUser,"initialUser")
-
   return (
     <div className="min-h-screen bg-[#0a0a09] text-white flex">
       {/* ══ DESKTOP SIDEBAR ════════════════════════════════════════════════ */}

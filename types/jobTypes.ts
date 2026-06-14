@@ -66,6 +66,18 @@ export interface Job {
 
 export type Role = "USER" | "RECRUITER" | "ADMIN";
 
+export type ApplicationStatus = "APPLIED" | "SHORTLISTED" | "REJECTED"
+
+export interface UserApplication{
+  id: string;
+  jobId: string;
+  userId: string;
+  resume?: string | null;
+  coverLetter?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type UserType = {
   id: string;
   name: string;
@@ -74,6 +86,7 @@ export type UserType = {
   isVerified: boolean;
   createdAt: string;
   updatedAt: string;
+  applications?: UserApplication[]
 
   userInfo?: {
     about?: string | null;

@@ -7,13 +7,15 @@ import { Award } from "lucide-react";
 import { Job, UserType } from "@/types/jobTypes";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { getJobById } from "@/app/services/job/job.service";
+import { applyForJob, getJobById } from "@/app/services/job/job.service";
 import Loader from "../Loader";
 import toast from "react-hot-toast";
 
 export default function JobDetailsPage({ id = "1", user }: { id: string; user: UserType }) {
   const [job, setJob] = useState<Job>();
   const [loading, setLoading] = useState(false);
+  const [applying, setApplying] = useState(false);
+
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -62,18 +64,26 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
   };
 
   const handleApply = async () => {
-    // @ts-ignore
-    if(user.error){
-      toast.error("Please Login to Apply")
-    }
     try {
-      // await applyForJob(id);
+      setApplying(true);
+
+      const res = await applyForJob(id);
+
+      if (res.success) {
+        toast.success("Job applied successfully");
+      } else {
+        toast.error("Failed to apply for job");
+      }
     } catch (error) {
       console.log(error);
+      toast.error("Failed to apply for job");
+    } finally {
+      setApplying(false);
     }
   };
 
-  // console.log(user,"user")
+
+  const isApplied = user.applications?.some((application: any) => application?.jobId === job?.id);
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white px-6 pt-32 pb-10">
@@ -162,7 +172,7 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
             <div className="bg-[#161616] border border-gray-800 rounded-md p-5 text-center">
               {job?.recruiter?.companyImage ? (
                 <div className="w-16 h-16 mx-auto rounded-full overflow-hidden mb-3">
-                  <img src={job?.recruiter?.companyImage || ""}/>
+                  <img src={job?.recruiter?.companyImage || ""} />
                 </div>
               ) : (
                 <h2 className="text-3xl font-bold mb-3 bg-black w-16 h-16 mx-auto rounded-full flex items-center justify-center">{job?.recruiter?.companyName?.slice(0, 1)}</h2>
@@ -195,8 +205,8 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
             </div>
 
             {/* Apply Button */}
-            <button onClick={handleApply} className="w-full bg-white text-black py-3 rounded-md-xl font-semibold hover:bg-gray-200 transition rounded-md cursor-pointer">
-              {loading ? <Loader2 className="animate-spin mx-auto" /> : "Apply Now"}
+            <button disabled={applying || isApplied} onClick={!isApplied ? handleApply : undefined} className="w-full bg-white text-black py-3 rounded-md-xl font-semibold hover:bg-gray-200 transition rounded-md cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+              {applying ? <Loader2 className="animate-spin mx-auto" /> : isApplied ? "Already Applied" : "Apply Now"}
             </button>
           </div>
         </div>

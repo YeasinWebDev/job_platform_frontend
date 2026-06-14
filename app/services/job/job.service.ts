@@ -1,8 +1,8 @@
 "use server";
 
 import { serverFetch } from "@/lib/server-fetch";
-import { FilterState } from "@/types/jobTypes";
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { ApplicationStatus, FilterState } from "@/types/jobTypes";
+import { revalidateTag } from 'next/cache';
 
 export const getAllJobs = async ({ page ,search, location, category, experience, jobType, contact, salaryMin, salaryMax, datePosted }: FilterState) => {
   try {
@@ -53,6 +53,36 @@ export const createJob = async (payload: any) => {
   }
 };
 
+export const applyForJob = async (jobId: string) => {
+  try {
+    const result = await serverFetch.post(`/job/apply-for-job`,{
+      body:JSON.stringify({jobId}),
+      headers:{
+        "Content-Type": "application/json"
+      },
+    });
+    const data = await result.json();
+    revalidateTag("job","getMe")
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const myApplicationsList = async (page:number,search:string,status:ApplicationStatus|null) => {
+  try {
+    const result = await serverFetch.get(`/user/applications?page=${page}&limit=3&search=${search}&status=${status}`,{
+      cache: "no-store",
+      next:{
+        tags:["job"]
+      }
+    });
+    const data = await result.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export const MyCreatedJobs = async (page:number,search:string) => {
   try {
