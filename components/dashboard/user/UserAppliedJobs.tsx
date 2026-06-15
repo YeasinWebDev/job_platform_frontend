@@ -2,54 +2,105 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import React, { useEffect, useState } from 'react'
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react'
 import { myApplicationsList } from '@/app/services/job/job.service';
 import { ApplicationStatus } from '@/types/jobTypes';
+import UserJobDetailsModel from './UserJobDetailsModel';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-function UserAppliedJobs({ mockData, getStatusBadgeColor, getStatusIcon }: any) {
+function UserAppliedJobs({ getStatusBadgeColor, getStatusIcon }: { getStatusBadgeColor: (status: string) => string, getStatusIcon: (status: string) => React.ReactNode }) {
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [myApplications, setMyApplications] = useState([]);
   const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState<string>("");
   const [status, setStatus] = useState<ApplicationStatus | null>(null);
   const [totalPages, setTotalPages] = useState<number>(0)
-
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true)
         const response = await myApplicationsList(page, search, status)
         setMyApplications(response?.data?.result)
         setTotalPages(Number(response?.data?.meta?.totalPages))
       } catch (error) {
         console.log(error)
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchData();
   }, [page, search, status])
 
+
+  const statusLists = [
+    "APPLIED",
+    "SHORTLISTED",
+    "REJECTED",
+  ]
+
   return (
     <div className="space-y-6">
       <Card className="bg-[#121211] border-white/5">
-        <CardHeader className="border-b border-white/5 py-4 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-bold tracking-wide text-white uppercase">Application History</CardTitle>
-          <span className="text-xs text-gray-400">{mockData.applications.length} Entries</span>
+        <CardHeader className="border-b border-white/5 py-4 flex flex-col items-start justify-between">
+          <div className="flex items-center gap-3 mb-4 justify-between w-full">
+            <CardTitle className="text-sm font-bold tracking-wide text-white uppercase">Application History</CardTitle>
+            <span className="text-xs text-gray-400">{
+              isLoading ? "Loading..." : myApplications?.length + " Entries"
+            }</span>
+          </div>
+
+          <div className='flex items-center gap-5'>
+            <Select
+              value={status}
+              onValueChange={(value) => setStatus(value as ApplicationStatus | null)}
+            >
+              <SelectTrigger className="bg-[#121211] border border-white/10 text-white  px-3 py-2 rounded-sm outline-none">
+                <SelectValue placeholder="Select a status" className="lowercase" />
+              </SelectTrigger>
+              <SelectContent
+                className='rounded-none bg-transparent text-sm'
+              >
+                {statusLists.map((st) => (
+                  <SelectItem key={st} value={st} className={`bg-[#121211] text-sm lowercase rounded-none text-white border-0 ${st === "APPLIED" ? "rounded-t-md" : st === "REJECTED" ? "rounded-b-md" : ""}`}>
+                    {st}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button disabled={isLoading} className='rounded-sm cursor-pointer' onClick={() => { setStatus(null), setSearch("") }}>Clear</Button>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-white/5 text-[10px] uppercase tracking-wider text-gray-400 bg-white/1">
-                  <th className="p-4 font-semibold">Job Title & Company</th>
-                  <th className="p-4 font-semibold">Date Applied</th>
-                  <th className="p-4 font-semibold">Status</th>
-                  <th className="p-4 font-semibold text-right">Actions</th>
+                  <th className="p-4 font-semibold text-nowrap">Job Title & Company</th>
+                  <th className="p-4 font-semibold text-nowrap">Date Applied</th>
+                  <th className="p-4 font-semibold text-nowrap">Status</th>
+                  <th className="p-4 font-semibold text-right text-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-sm">
-                {myApplications.map((app: any) => (
+                {
+                  isLoading && (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-gray-500 text-xs">
+                        Loading...
+                      </td>
+                    </tr>
+                  )
+                }
+                {!isLoading && myApplications.map((app: any) => (
                   <tr key={app.id} className="hover:bg-white/1 transition-colors">
                     <td className="p-4">
                       <div className="font-semibold text-white">{app.job.title}</div>
@@ -74,7 +125,7 @@ function UserAppliedJobs({ mockData, getStatusBadgeColor, getStatusIcon }: any) 
                     </td>
                   </tr>
                 ))}
-                {myApplications.length === 0 && (
+                {!isLoading && myApplications.length === 0 && (
                   <tr>
                     <td colSpan={4} className="p-8 text-center text-gray-500 text-xs">
                       You haven't applied to any jobs yet.
@@ -85,110 +136,46 @@ function UserAppliedJobs({ mockData, getStatusBadgeColor, getStatusIcon }: any) 
             </table>
           </div>
         </CardContent>
+        {/* Pagination */}
         {totalPages > 0 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-white/5">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center justify-center gap-2 mt-10 flex-wrap">
+            <button
               disabled={page === 1}
               onClick={() => setPage((prev) => prev - 1)}
-              className="bg-transparent border-white/10 text-white hover:bg-white/5"
+              className="px-4 py-2 border border-gray-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#1b1b1a] transition cursor-pointer rounded-sm"
             >
               Previous
-            </Button>
+            </button>
 
-            <div className="flex items-center gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (pageNumber) => (
-                  <Button
-                    key={pageNumber}
-                    size="sm"
-                    onClick={() => setPage(pageNumber)}
-                    className={
-                      page === pageNumber
-                        ? "bg-primary text-white"
-                        : "bg-transparent border border-white/10 text-white hover:bg-white/5"
-                    }
-                  >
-                    {pageNumber}
-                  </Button>
-                )
-              )}
-            </div>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`w-10 h-10 border cursor-pointer transition rounded-sm ${page === p ? "bg-white text-black border-white" : "border-gray-700 text-white hover:bg-[#1b1b1a]"}`}
+              >
+                {p}
+              </button>
+            ))}
 
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               disabled={page === totalPages}
               onClick={() => setPage((prev) => prev + 1)}
-              className="bg-transparent border-white/10 text-white hover:bg-white/5"
+              className="px-4 py-2 border border-gray-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#1b1b1a] transition cursor-pointer rounded-sm"
             >
               Next
-            </Button>
+            </button>
           </div>
         )}
       </Card>
 
       {/* Details Modal */}
       {selectedApplication && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-full max-w-lg rounded-xl bg-[#121211] border border-white/10 p-6 space-y-5 shadow-2xl relative"
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-primary">Application Details</span>
-                <h3 className="text-lg font-black text-white mt-1">{selectedApplication.jobTitle}</h3>
-                <p className="text-sm text-gray-400">{selectedApplication.company}</p>
-              </div>
-              <span className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusBadgeColor(selectedApplication.status)}`}>
-                {selectedApplication.status}
-              </span>
-            </div>
-
-            <div className="space-y-3 text-xs text-gray-300 border-t border-b border-white/5 py-4">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Date Applied:</span>
-                <span>{new Date(selectedApplication.dateApplied).toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Job Type:</span>
-                <span>Full-time (Remote)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Location:</span>
-                <span>{selectedApplication.location || "San Francisco, CA"}</span>
-              </div>
-              <div className="flex flex-col gap-1.5 pt-2">
-                <span className="text-gray-500">Application Progress:</span>
-                <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden mt-1">
-                  <div
-                    className={`h-full rounded-full ${selectedApplication.status === "SHORTLISTED"
-                        ? "bg-green-400 w-full"
-                        : selectedApplication.status === "REJECTED"
-                          ? "bg-red-400 w-1/3"
-                          : "bg-amber-400 w-2/3"
-                      }`}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 justify-end pt-2">
-              <Button
-                onClick={() => setSelectedApplication(null)}
-                className="bg-white/5 hover:bg-white/10 text-white rounded-md h-9 text-xs font-semibold cursor-pointer border border-white/5"
-              >
-                Close
-              </Button>
-              <Button className="bg-primary hover:bg-primary/90 text-white rounded-md h-9 text-xs font-semibold cursor-pointer">
-                View Original Listing
-              </Button>
-            </div>
-          </motion.div>
-        </div>
+        <UserJobDetailsModel
+          getStatusBadgeColor={getStatusBadgeColor}
+          getStatusIcon={getStatusIcon}
+          application={selectedApplication}
+          onClose={() => setSelectedApplication(null)}
+        />
       )}
     </div>
   );

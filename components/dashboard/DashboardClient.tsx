@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { logoutUser } from "@/app/services/auth/auth";
 import Sidebar from "./Sidebar";
@@ -19,10 +19,12 @@ interface DashboardClientProps {
 
 export default function DashboardClient({ initialUser }: DashboardClientProps) {
   const router = useRouter();
-  
+
   // Role selection state (defaults to actual role, but switchable for demo purposes)
   const [role, setRole] = useState<"USER" | "RECRUITER" | "ADMIN">(initialUser?.role || "USER");
   const [activeTab, setActiveTab] = useState("overview");
+
+
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -33,20 +35,23 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
     }
   }, [initialUser]);
 
-  // Reset tab to overview when switching roles to avoid loading invalid tabs
   useEffect(() => {
-    setActiveTab("overview");
-  }, [role]);
+    const savedTab = JSON.parse(localStorage.getItem("activeTab")!);
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }else{
+      setActiveTab("overview");
+    }
+  }, []);
 
-  // Logout handler
   const handleLogout = async () => {
     await logoutUser();
     toast.success("Logged out successfully");
     router.push("/auth");
     router.refresh();
+    localStorage.removeItem("activeTab");
   };
 
-  // High fidelity mock data for interaction and demonstration
   const [mockData, setMockData] = useState({
     // USER layout mock data
     applications: [
@@ -213,6 +218,7 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
       }
     ]
   });
+  
 
   return (
     <div className="min-h-screen bg-[#0a0a09] text-white flex">
@@ -257,7 +263,7 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
                   setMobileOpen(false);
                 }}
                 collapsed={false}
-                setCollapsed={() => {}}
+                setCollapsed={() => { }}
                 user={initialUser}
                 handleLogout={handleLogout}
               />
@@ -275,9 +281,8 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
 
       {/* ══ MAIN VIEWPORT CONTAINER ════════════════════════════════════════ */}
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
-          collapsed ? "lg:pl-20" : "lg:pl-64"
-        }`}
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${collapsed ? "lg:pl-20" : "lg:pl-64"
+          }`}
       >
         <Header
           role={role}
