@@ -58,6 +58,7 @@ export interface Job {
   minSalary: string;
   other_requirements: string[];
   recruiterId: string;
+  bookmarkedBy: {id: string}[]
 
   recruiter: Recruiter;
 

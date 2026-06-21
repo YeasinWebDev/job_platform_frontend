@@ -60,7 +60,7 @@ export default function UserDashboard({ activeTab, user, mockData, setMockData }
       return <UserAppliedJobs getStatusBadgeColor={getStatusBadgeColor} getStatusIcon={getStatusIcon} />
 
     case "saved":
-      return <UserSavedJobs mockData={mockData} handleRemoveSaved={handleRemoveSaved} />
+      return <UserSavedJobs />
 
     case "profile":
       return <UserProfile user={user} />

@@ -44,6 +44,7 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
   useEffect(() => {
     const removerUser = async () => {
       await logoutUser();
+      localStorage.clear();
       router.refresh();
       toast.success("Session Expired, Please Login Again");
     };

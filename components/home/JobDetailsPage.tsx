@@ -1,20 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapPin, Briefcase, Users, Clock } from "lucide-react";
+import { MapPin, Briefcase, Users, Clock, Bookmark } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { Award } from "lucide-react";
 import { Job, UserType } from "@/types/jobTypes";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { applyForJob, getJobById } from "@/app/services/job/job.service";
+import { applyForJob, getJobById, createBookmark as createBookmarkService, deleteBookmark as deleteBookmarkService } from "@/app/services/job/job.service";
 import Loader from "../Loader";
 import toast from "react-hot-toast";
+import { getMe } from "@/app/services/auth/auth";
 
-export default function JobDetailsPage({ id = "1", user }: { id: string; user: UserType }) {
+export default function JobDetailsPage({ id = "1", }: { id: string;}) {
   const [job, setJob] = useState<Job>();
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [userId, setUserId] = useState()
 
 
   useEffect(() => {
@@ -22,6 +24,8 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
       setLoading(true);
       try {
         const data = await getJobById(id);
+        const user = await getMe();
+        setUserId(user?.id);
         setJob(data?.data);
       } catch (error) {
         console.log(error);
@@ -31,6 +35,43 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
     };
     fetchJob();
   }, [id]);
+
+  // @ts-ignore
+  const isBookmarked = job?.recruiter?.bookmarkedBy?.some((i) => i.id === userId) ?? false;
+
+  const handleBookmarkToggle = async () => {
+    if (!job) return;
+    try {
+      if (isBookmarked) {
+        await deleteBookmarkService(job.id);
+        toast.success("Job removed from bookmark");
+        setJob((prev) =>
+          prev
+            ? {
+                ...prev,
+                // @ts-ignore
+                recruiter: { ...prev.recruiter, bookmarkedBy: prev.recruiter.bookmarkedBy.filter((i) => i.id !== userId!) },
+              }
+            : prev
+        );
+      } else {
+        await createBookmarkService(job.id);
+        toast.success("Job bookmarked successfully");
+        setJob((prev) =>
+          prev
+            ? {
+                ...prev,
+                // @ts-ignore
+                recruiter: { ...prev.recruiter, bookmarkedBy: [...prev.recruiter.bookmarkedBy, { id: userId! }] },
+              }
+            : prev
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to update bookmark");
+    }
+  };
 
   if (loading) {
     return (
@@ -82,8 +123,9 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
     }
   };
 
+  console.log(job,isBookmarked,userId,"job")
 
-  const isApplied = user.applications?.some((application: any) => application?.jobId === job?.id);
+  // const isApplied = user?.applications?.some((application: any) => application?.jobId === job?.id);
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-white px-6 pt-32 pb-10">
@@ -112,9 +154,20 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
               </div>
             </div>
 
-            <div className="text-right flex items-end flex-col justify-end w-full">
-              <p className="text-xl font-semibold">{formatSalary(job?.minSalary!, job?.maxSalary!)}</p>
-              <p className="text-xs text-gray-400">Salary / year</p>
+            <div className="text-right flex items-end flex-col justify-end w-full gap-2">
+              <div className="flex items-center gap-3">
+                <div>
+                  <p className="text-xl font-semibold">{formatSalary(job?.minSalary!, job?.maxSalary!)}</p>
+                  <p className="text-xs text-gray-400">Salary / year</p>
+                </div>
+                <Button
+                  onClick={handleBookmarkToggle}
+                  className={`p-2 bg-transparent hover:bg-gray-800 transition-colors ${isBookmarked ? "text-primary" : "text-gray-400 hover:text-white"}`}
+                  title={isBookmarked ? "Remove bookmark" : "Bookmark this job"}
+                >
+                  <Bookmark className={`size-6 ${isBookmarked ? "fill-current" : ""}`} />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -205,9 +258,9 @@ export default function JobDetailsPage({ id = "1", user }: { id: string; user: U
             </div>
 
             {/* Apply Button */}
-            <button disabled={applying || isApplied} onClick={!isApplied ? handleApply : undefined} className="w-full bg-white text-black py-3 rounded-md-xl font-semibold hover:bg-gray-200 transition rounded-md cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+            {/* <button disabled={applying || isApplied} onClick={!isApplied ? handleApply : undefined} className="w-full bg-white text-black py-3 rounded-md-xl font-semibold hover:bg-gray-200 transition rounded-md cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
               {applying ? <Loader2 className="animate-spin mx-auto" /> : isApplied ? "Already Applied" : "Apply Now"}
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Briefcase } from "lucide-react";
+import { Bookmark, Briefcase } from "lucide-react";
 import { useDebounce } from "use-debounce";
-import { getAllJobs } from "@/app/services/job/job.service";
+import { getAllJobs, createBookmark as createBookmarkService, deleteBookmark as deleteBookmarkService } from "@/app/services/job/job.service";
 import { Category, FilterState, Job } from "@/types/jobTypes";
 import { getAllCategories } from "@/app/services/category/category.service";
 import Loader from "@/components/Loader";
@@ -12,6 +12,8 @@ import Link from "next/link";
 import JobFilter from "@/components/home/job/JobFilter";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { getMe } from "@/app/services/auth/auth";
+import toast from "react-hot-toast";
 
 // Main component
 export default function JobBoardPage() {
@@ -21,6 +23,7 @@ export default function JobBoardPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState()
 
   // Initialize filter state from URL params
   const [filters, setFilters] = useState<FilterState>({
@@ -163,6 +166,8 @@ export default function JobBoardPage() {
         datePosted: filters.datePosted,
         page: page,
       });
+      const userData = await getMe();
+      setUserId(userData.id);
 
       setJobs(res?.data?.jobs || []);
       setTotalPages(res?.data?.meta?.totalPages || 1);
@@ -185,6 +190,43 @@ export default function JobBoardPage() {
     return `$${Math.round(Number(min) / 1000)}k – $${Math.round(Number(max) / 1000)}k`;
   };
 
+
+
+  const isBookmarked = (bookmarkedBy: { id: string }[]) => {
+    return bookmarkedBy.some((i) => i.id === userId);
+  };
+
+  const createBookmark = async (jobId: string) => {
+    await createBookmarkService(jobId);
+    toast.success("Job bookmarked successfully");
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === jobId
+          ? {
+            ...job,
+            bookmarkedBy: [...job.bookmarkedBy, { id: userId! as string }],
+          }
+          : job
+      )
+    );
+    router.refresh()
+  }
+
+  const deleteBookmark = async (jobId: string) => {
+    await deleteBookmarkService(jobId);
+    toast.success("Job removed from bookmark");
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === jobId
+          ? {
+            ...job,
+            bookmarkedBy: job.bookmarkedBy.filter((i) => i.id !== userId),
+          }
+          : job
+      )
+    );
+    router.refresh()
+  }
 
   return (
     <div className="min-h-screen mt-20">
@@ -252,8 +294,18 @@ export default function JobBoardPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
                     {jobs.map((job) => (
                       <Link href={`/job/${job.id}`} key={job.id} className={`cursor-pointer relative bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300 h-64`}>
-                        <div className="text-[0.7rem] text-red-400 absolute top-10 right-10">
-                          Expires: {new Date(job.expiresAt).toLocaleDateString()}
+                        <div className="text-[0.7rem] text-red-400 absolute top-10 right-10 flex items-center justify-center gap-5">
+                          <span>Expires: {new Date(job.expiresAt).toLocaleDateString()}</span>
+                          <Button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              isBookmarked(job.bookmarkedBy) ? deleteBookmark(job.id) : createBookmark(job.id);
+                            }}
+                            className={`p-0 bg-transparent ${isBookmarked(job.bookmarkedBy) ? "text-primary" : ""}`}
+                            title=""
+                          >
+                            <Bookmark className="size-6 fill-current" />
+                          </Button>
                         </div>
                         {/* Company */}
                         <div className="flex items-center gap-3 mb-4">
