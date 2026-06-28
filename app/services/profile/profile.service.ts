@@ -20,3 +20,16 @@ export const updateProfile = async (body: any) => {
     console.log(error, "error in update profile");
   }
 };
+
+export const getUserOverView = async () => {
+  try {
+    const res = await serverFetch.get("/user/user-overview", {
+      next: { revalidate: 30, tags: ["userOverview"] },
+    });
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.log(error, "error in get user overview");
+  }
+};

@@ -3,10 +3,11 @@
 import { getMyBookmarkedJobs, deleteBookmark as deleteBookmarkService } from '@/app/services/job/job.service'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Calendar, Bookmark, MapPin, Briefcase, Loader2 } from 'lucide-react'
+import { Calendar, Bookmark, MapPin, Briefcase } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import { UserSavedJobsSkeleton } from './UserComponents'
 
 function UserSavedJobs() {
 
@@ -40,55 +41,69 @@ function UserSavedJobs() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-      </div>
-    )
+    return <UserSavedJobsSkeleton/>
   }
+
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-white">Saved Jobs</h3>
+        <span className="text-xs text-gray-400">{myJobs.length} {myJobs.length === 1 ? 'job' : 'jobs'} saved</span>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {myJobs.map((job: any) => (
-          <Card key={job.id} className="bg-[#121211] border-white/5 hover:border-white/10 transition-colors flex flex-col justify-between p-5">
-            <div className="space-y-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="text-base font-bold text-white leading-tight">{job.title}</h4>
-                  <p className="text-xs text-gray-400 mt-1">{job.recruiter?.companyName || job.company}</p>
+        {myJobs.map((job: any, index: number) => (
+          <Card
+            key={job.id}
+            className="group bg-[#121211] border border-white/5 hover:border-primary/20 transition-all duration-300 p-5 relative overflow-hidden"
+          >
+            {/* Subtle gradient accent on hover */}
+            <div className="absolute inset-0 bg-linear-to-br from-cyan-500/0 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+            {/* Top section */}
+            <div className="relative">
+              <div className="flex justify-between items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-base font-bold text-white leading-tight truncate group-hover:text-primary/60 transition-colors duration-300">
+                    {job.title}
+                  </h4>
+                  <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1.5 ">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 inline-block transition-all group-hover:bg-primary" />
+                    <span className='group-hover:text-primary/60 transition-all'>{job.recruiter?.companyName || job.company}</span>
+                  </p>
                 </div>
                 <Button
                   onClick={() => handleRemoveBookmark(job.id)}
-                  className="h-7 w-7 p-0 bg-transparent hover:bg-red-500/10 text-primary hover:text-red-400 rounded-md border border-white/5 cursor-pointer"
+                  className="h-8 w-8 p-0 bg-transparent hover:bg-red-500/10 text-gray-500 hover:text-red-400 rounded-lg border border-white/5 hover:border-red-500/20 cursor-pointer shrink-0 transition-all duration-200"
                   title="Remove from saved"
                 >
                   <Bookmark className="w-3.5 h-3.5 fill-current" />
                 </Button>
               </div>
 
-              <div className="flex flex-wrap gap-2 text-xs text-gray-400 mt-2">
-                <span className="flex items-center gap-1 text-[11px]">
-                  <MapPin size={12} />
+              {/* Job details chips */}
+              <div className="flex flex-wrap items-center gap-2 mt-4">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-full text-[10px] font-medium text-gray-300 border border-white/5">
+                  <MapPin size={11} className="text-gray-500" />
                   {job.location}
                 </span>
-                <span className="text-white/10">•</span>
-                <span className="flex items-center gap-1 text-[11px]">
-                  <Briefcase size={12} />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-full text-[10px] font-medium text-gray-300 border border-white/5">
+                  <Briefcase size={11} className="text-gray-500" />
                   {job.jobType?.toLowerCase()}
                 </span>
-                <span className="text-white/10">•</span>
-                <span className="flex items-center gap-1 text-[11px]">
-                  <Calendar size={12} />
-                  Posted {new Date(job.createdAt).toLocaleDateString()}
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-full text-[10px] font-medium text-gray-300 border border-white/5">
+                  <Calendar size={11} className="text-gray-500" />
+                  {new Date(job.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
             </div>
 
-            <div className="flex gap-2.5 mt-5 pt-4 border-t border-white/5">
-              <Link href={`/job/${job.id}`} className="flex-1">
-                <Button className="w-full bg-white/5 hover:bg-white/10 text-white text-xs h-9 rounded-md cursor-pointer border border-white/5">
-                  View Details
+            {/* Action button */}
+            <div className="mt-5 pt-4 border-t border-white/5 relative">
+              <Link href={`/job/${job.id}`} className="block w-full">
+                <Button className="w-full bg-white/5 hover:bg-linear-to-r hover:from-primary/30 hover:to-primary/60 text-white text-xs h-9 rounded-lg cursor-pointer border border-white/5 hover:border-transparent transition-all duration-300 group/btn">
+                  <span className="group-hover/btn:tracking-wider transition-all duration-300">View Details</span>
                 </Button>
               </Link>
             </div>
@@ -96,8 +111,19 @@ function UserSavedJobs() {
         ))}
 
         {myJobs.length === 0 && (
-          <div className="col-span-full py-16 text-center text-gray-500 text-sm">
-            No saved jobs. Browse job opportunities to add them here!
+          <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+              <Bookmark className="w-7 h-7 text-gray-500" />
+            </div>
+            <p className="text-gray-400 text-sm font-medium">No saved jobs yet</p>
+            <p className="text-gray-600 text-xs mt-1.5 max-w-xs">
+              Browse through available job opportunities and save the ones that interest you!
+            </p>
+            <Link href="/jobs">
+              <Button className="mt-5 bg-white/5 hover:bg-white/10 text-white text-xs h-9 rounded-lg cursor-pointer border border-white/5">
+                Browse Jobs
+              </Button>
+            </Link>
           </div>
         )}
       </div>

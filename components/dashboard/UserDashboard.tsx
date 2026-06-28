@@ -54,7 +54,7 @@ export default function UserDashboard({ activeTab, user, mockData, setMockData }
   // Render sub-sections based on activeTab
   switch (activeTab) {
     case "overview":
-      return <UserOverview user={user} mockData={mockData} getStatusBadgeColor={getStatusBadgeColor} getStatusIcon={getStatusIcon} />
+      return <UserOverview user={user} getStatusBadgeColor={getStatusBadgeColor} getStatusIcon={getStatusIcon} />
 
     case "applied":
       return <UserAppliedJobs getStatusBadgeColor={getStatusBadgeColor} getStatusIcon={getStatusIcon} />
