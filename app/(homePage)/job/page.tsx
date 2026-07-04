@@ -252,6 +252,7 @@ export default function JobBoardPage() {
           </div>
 
           <Sheet>
+            {/* @ts-ignore */}
             <SheetTrigger asChild className="lg:hidden">
               <div className="flex items-end justify-end">
                 <Button className='p-4 rounded'>Filters</Button>
@@ -293,7 +294,7 @@ export default function JobBoardPage() {
                 {jobs.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
                     {jobs.map((job) => (
-                      <Link href={`/job/${job.id}`} key={job.id} className={`cursor-pointer relative bg-[#111110] hover:bg-[#161614] p-9 relative transition-all duration-300 h-64`}>
+                      <Link href={`/job/${job.id}`} key={job.id} className={`cursor-pointer relative bg-[#111110] hover:bg-[#161614] p-9 transition-all duration-300 h-64`}>
                         <div className="text-[0.7rem] text-red-400 absolute top-10 right-10 flex items-center justify-center gap-5">
                           <span>Expires: {new Date(job.expiresAt).toLocaleDateString()}</span>
                           <Button

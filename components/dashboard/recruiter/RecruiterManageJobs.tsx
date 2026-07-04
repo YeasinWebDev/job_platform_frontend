@@ -1,7 +1,6 @@
 "use client"
 
 import { deleteJob, MyCreatedJobs, updateJobStatus } from '@/app/services/job/job.service';
-import Loader from '@/components/Loader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,6 +15,11 @@ function RecruiterManageJobs() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; jobId: string | null; jobTitle: string }>({
+        isOpen: false,
+        jobId: null,
+        jobTitle: ''
+    });
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -46,12 +50,25 @@ function RecruiterManageJobs() {
         }
     };
 
-    // Delete Job
-    const handleDeleteJob = async (jobId: string) => {
+    // Open Delete Confirmation Modal
+    const openDeleteModal = (jobId: string, jobTitle: string) => {
+        setDeleteModal({ isOpen: true, jobId, jobTitle });
+    };
+
+    // Close Delete Confirmation Modal
+    const closeDeleteModal = () => {
+        setDeleteModal({ isOpen: false, jobId: null, jobTitle: '' });
+    };
+
+    // Confirm Delete Job
+    const handleConfirmDelete = async () => {
+        if (!deleteModal.jobId) return;
+
         try {
-            await deleteJob(jobId);
+            await deleteJob(deleteModal.jobId);
             setRefresh(!refresh);
             toast.success("Job deleted successfully!");
+            closeDeleteModal();
         } catch (error) {
             toast.error("Failed to delete job!");
         }
@@ -122,7 +139,7 @@ function RecruiterManageJobs() {
                                                 {job.status === "ACTIVE" ? <Pause size={13} /> : <Play size={13} />}
                                             </Button>
                                             <Button
-                                                onClick={() => handleDeleteJob(job.id)}
+                                                onClick={() => openDeleteModal(job.id, job.title)}
                                                 className="h-8 w-8 p-0 bg-transparent hover:bg-red-500/10 text-gray-400 hover:text-red-400 rounded-md border border-white/10 cursor-pointer"
                                                 title="Delete job listing"
                                             >
@@ -171,6 +188,32 @@ function RecruiterManageJobs() {
                     >
                         Next
                     </button>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {deleteModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                    <div className="bg-[#1a1a19] border border-white/10 rounded-lg p-6 w-full max-w-md mx-4 shadow-2xl">
+                        <h3 className="text-lg font-semibold text-white mb-2">Confirm Delete</h3>
+                        <p className="text-sm text-gray-400 mb-6">
+                            Are you sure you want to delete <span className="text-white font-medium">"{deleteModal.jobTitle}"</span>? This action cannot be undone.
+                        </p>
+                        <div className="flex items-center justify-end gap-3">
+                            <Button
+                                onClick={closeDeleteModal}
+                                className="px-4 py-2 bg-transparent hover:bg-white/5 text-gray-300 border border-white/10 rounded-md text-sm cursor-pointer"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleConfirmDelete}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm cursor-pointer"
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             )}
         </>

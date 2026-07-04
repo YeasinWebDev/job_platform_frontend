@@ -15,6 +15,7 @@ import { UserType } from "@/types/jobTypes";
 
 interface RecruiterDashboardProps {
   activeTab: string;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
   user: UserType;
   mockData: any;
   setMockData: React.Dispatch<React.SetStateAction<any>>;
@@ -24,12 +25,13 @@ export default function RecruiterDashboard({
   activeTab,
   user,
   mockData,
-  setMockData
+  setMockData, 
+  setActiveTab
 }: RecruiterDashboardProps) {
 
   switch (activeTab) {
     case "overview":
-      return<RecruiterOverview user={user} mockData={mockData} />;
+      return<RecruiterOverview user={user} setActiveTab={setActiveTab}/>;
 
     case "manage-jobs":
       return <RecruiterManageJobs mockData={mockData} setMockData={setMockData} />;
@@ -38,7 +40,7 @@ export default function RecruiterDashboard({
       return <RecruiterPostJob user={user} />
 
     case "applicants":
-      return <RecruiterApplicants mockData={mockData} setMockData={setMockData} />
+      return <RecruiterApplicants />
 
     default:
       return null;

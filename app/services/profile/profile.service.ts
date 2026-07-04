@@ -33,3 +33,16 @@ export const getUserOverView = async () => {
     console.log(error, "error in get user overview");
   }
 };
+
+export const getRecruiterOverView = async () => {
+  try {
+    const res = await serverFetch.get("/user/recruiter-overview", {
+      next: { revalidate: 30, tags: ["recruiterOverview"] },
+    });
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.log(error, "error in get recruiter overview");
+  }
+};

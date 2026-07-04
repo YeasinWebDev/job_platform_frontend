@@ -160,3 +160,41 @@ export const deleteBookmark = async (jobId: string) => {
     console.log(error);
   }
 };
+
+export const updateApplicationStatus = async (applicationId: string, status: string) => {
+  try {
+    const result = await serverFetch.put(`/job/update-application-status/${applicationId}`, {
+      body: JSON.stringify({ status }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await result.json();
+    revalidateTag("job", "delete");
+    revalidateTag("recruiterOverview", "default");
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getRecruiterApplications = async (page: number, search: string, contractType?: string) => {
+  try {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("limit", "10");
+    if (search) params.set("search", search);
+    if (contractType) params.set("contractType", contractType);
+
+    const result = await serverFetch.get(`/job/recruiter-applications?${params.toString()}`, {
+      cache: "no-store",
+      next: {
+        tags: ["job"],
+      },
+    });
+    const data = await result.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};

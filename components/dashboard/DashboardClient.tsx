@@ -313,6 +313,7 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
               )}
               {role === "RECRUITER" && (
                 <RecruiterDashboard
+                  setActiveTab={setActiveTab}
                   activeTab={activeTab}
                   user={initialUser}
                   mockData={mockData}
