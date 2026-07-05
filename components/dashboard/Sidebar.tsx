@@ -1,8 +1,6 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -12,13 +10,11 @@ import {
   Bookmark,
   User,
   PlusCircle,
-  Settings,
   ChevronLeft,
   ChevronRight,
   LogOut,
   Building,
   ShieldCheck,
-  UserCheck
 } from "lucide-react";
 
 interface SidebarProps {
@@ -62,7 +58,7 @@ export default function Sidebar({
           { id: "overview", label: "Overview", icon: LayoutDashboard },
           { id: "manage-users", label: "Manage Users", icon: Users },
           { id: "manage-jobs", label: "Manage Jobs", icon: Briefcase },
-          { id: "settings", label: "System Settings", icon: Settings },
+          { id: "applications", label: "Applications", icon: FileText },
         ];
       default:
         return [];

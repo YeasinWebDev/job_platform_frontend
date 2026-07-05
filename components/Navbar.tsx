@@ -36,6 +36,7 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
 
   const handleLogout = async () => {
     await logoutUser();
+    localStorage.clear();
     toast.success("Logout Successful");
     router.push("/auth");
     router.refresh();

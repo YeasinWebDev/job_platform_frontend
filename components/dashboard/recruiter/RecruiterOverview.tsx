@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, CheckCircle, ExternalLink, PlusCircle, Users, Calendar, MapPin, Sparkles, User, ChevronRight, TrendingUp, TrendingDown, BarChart3, PieChart, Clock, Target } from 'lucide-react';
+import { Briefcase, CheckCircle, ExternalLink, PlusCircle, Users, Calendar, MapPin, Sparkles, TrendingUp, BarChart3, PieChart, Target } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import { getRecruiterOverView } from '@/app/services/profile/profile.service';
 import { RecruiterOverviewResponse } from '@/types/user.types';
@@ -118,7 +118,7 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
             {/* Recruiter Metrics - Enhanced */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="bg-[#121211] border-white/5 group hover:border-primary/20 transition-all duration-300">
-                    <CardContent className="pt-6">
+                    <CardContent className="py-3">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Total Posted Jobs</span>
                             <div className="p-2 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
@@ -139,7 +139,7 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
                 </Card>
 
                 <Card className="bg-[#121211] border-white/5 group hover:border-green-500/20 transition-all duration-300">
-                    <CardContent className="pt-6">
+                    <CardContent className="py-3">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Active Listings</span>
                             <div className="p-2 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
@@ -160,7 +160,7 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
                 </Card>
 
                 <Card className="bg-[#121211] border-white/5 group hover:border-amber-500/20 transition-all duration-300">
-                    <CardContent className="pt-6">
+                    <CardContent className="py-3">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Total Applicants</span>
                             <div className="p-2 rounded-lg bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors">
@@ -183,7 +183,7 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
                 </Card>
 
                 <Card className="bg-[#121211] border-white/5 group hover:border-green-500/20 transition-all duration-300">
-                    <CardContent className="pt-6">
+                    <CardContent className="py-3">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Shortlisted</span>
                             <div className="p-2 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors">
@@ -218,7 +218,7 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
                     </CardHeader>
                     <CardContent className="p-4 space-y-4">
                         {totalByType > 0 ? (
-                            <>
+                            <div className='relative h-[20vw]'>
                                 {/* Remote */}
                                 <div>
                                     <div className="flex items-center justify-between mb-1.5">
@@ -257,13 +257,13 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
                                         />
                                     </div>
                                 </div>
-                                <div className="pt-2 border-t border-white/5">
+                                <div className="pt-2 border-t border-white/5 absolute bottom-5">
                                     <div className="flex items-center justify-between text-[10px] text-gray-600">
                                         <span>Total applications by type</span>
                                         <span className="font-medium text-gray-400">{totalByType}</span>
                                     </div>
                                 </div>
-                            </>
+                            </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-6">
                                 <div className="p-2.5 rounded-full bg-white/5 mb-2">
@@ -385,63 +385,7 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
                         </Button>
                     </CardContent>
                 </Card>
-            </div>
-
-            {/* Recent Applicants */}
-            <Card className="bg-[#121211] border-white/5">
-                <CardHeader className="border-b border-white/5 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                            <div className="p-1.5 rounded-md bg-primary/10">
-                                <Users size={14} className="text-primary" />
-                            </div>
-                            <CardTitle className="text-sm font-bold tracking-wide text-white uppercase">Recent Applicants</CardTitle>
-                        </div>
-                        {data?.recentApplications && data.recentApplications.length > 0 && (
-                            <button className="text-[11px] font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-                                View all
-                                <ChevronRight size={12} />
-                            </button>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="divide-y divide-white/5">
-                        {data?.recentApplications?.slice(0, 3).map((app: any) => (
-                            <div key={app.id} className="p-4 hover:bg-white/1 transition-colors flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-lg bg-linear-to-br from-white/5 to-white/2 border border-white/5 flex items-center justify-center">
-                                        <User size={15} className="text-gray-500" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-sm font-semibold text-white">{app.user?.name || "Unknown"}</h4>
-                                        <p className="text-xs text-gray-400 mt-0.5">
-                                            Applied to: <span className="text-gray-300 font-medium">{app.job?.title || "Unknown Position"}</span>
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3 shrink-0">
-                                    <span className="text-[10px] text-gray-600 hidden sm:block whitespace-nowrap">
-                                        {new Date(app.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                    </span>
-                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border ${getStatusBadge(app.status)}`}>
-                                        {app.status}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                        {(!data?.recentApplications || data.recentApplications.length === 0) && (
-                            <div className="flex flex-col items-center justify-center py-12 px-5">
-                                <div className="p-3 rounded-full bg-white/5 mb-3">
-                                    <Users size={20} className="text-gray-500" />
-                                </div>
-                                <p className="text-sm text-gray-500">No applications received yet</p>
-                                <p className="text-xs text-gray-600 mt-1">Applications will appear here once candidates apply.</p>
-                            </div>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+            </div>           
         </div>
     );
 }
