@@ -15,6 +15,7 @@ import {
   LogOut,
   Building,
   ShieldCheck,
+  Brain,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -44,6 +45,7 @@ export default function Sidebar({
           { id: "overview", label: "Overview", icon: LayoutDashboard },
           { id: "applied", label: "Applied Jobs", icon: FileText },
           { id: "saved", label: "Saved Jobs", icon: Bookmark },
+          { id: "interview", label: "Interview Prep", icon: Brain },
           { id: "profile", label: "Profile Preview", icon: User },
         ];
       case "RECRUITER":
@@ -168,7 +170,7 @@ export default function Sidebar({
       </div>
 
       {/* Bottom Profile Section */}
-      <div className="p-4 border-t border-white/5 bg-white/[0.01]">
+      <div className="p-4 border-t border-white/5 bg-white/1">
         <div className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
           <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center font-bold text-white shrink-0 relative">
             {user?.name?.split(" ")[0].charAt(0).toUpperCase() || "U"}

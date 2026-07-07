@@ -10,6 +10,7 @@ import UserOverview from "./user/UserOverview";
 import UserAppliedJobs from "./user/UserAppliedJobs";
 import UserSavedJobs from "./user/UserSavedJobs";
 import UserProfile from "./user/UserProfile";
+import InterviewPrep from "./user/InterviewPrep";
 import { UserType } from "@/types/jobTypes";
 
 interface UserDashboardProps {
@@ -64,6 +65,9 @@ export default function UserDashboard({ activeTab, user, mockData, setMockData }
 
     case "profile":
       return <UserProfile user={user} />
+
+    case "interview":
+      return <InterviewPrep />
 
     default:
       return null;

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect, useState } from 'react'
 import { myApplicationsList } from '@/app/services/job/job.service';
+import { generateInterviewPrep, getAllInterviewPreps } from '@/app/services/interview/interview.service';
 import { ApplicationStatus } from '@/types/jobTypes';
 import UserJobDetailsModel from './UserJobDetailsModel';
 import {
@@ -13,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import toast from "react-hot-toast";
 
 function UserAppliedJobs({ getStatusBadgeColor, getStatusIcon }: { getStatusBadgeColor: (status: string) => string, getStatusIcon: (status: string) => React.ReactNode }) {
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
@@ -22,7 +24,8 @@ function UserAppliedJobs({ getStatusBadgeColor, getStatusIcon }: { getStatusBadg
   const [status, setStatus] = useState<ApplicationStatus | null>(null);
   const [totalPages, setTotalPages] = useState<number>(0)
   const [isLoading, setIsLoading] = useState<boolean>(false)
-
+  const [generatingPrep, setGeneratingPrep] = useState<string | null>(null)
+  const [interviewPreps, setInterviewPreps] = useState<string[]>([])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,12 +43,49 @@ function UserAppliedJobs({ getStatusBadgeColor, getStatusIcon }: { getStatusBadg
     fetchData();
   }, [page, search, status])
 
+  useEffect(() => {
+    const fetchInterviewPreps = async () => {
+      try {
+        const result = await getAllInterviewPreps()
+        if (result?.success && result.data) {
+          const jobIds = result.data.map((prep: any) => prep.jobId)
+          setInterviewPreps(jobIds)
+        }
+      } catch (error) {
+        console.error("Failed to fetch interview preps:", error)
+      }
+    }
+    fetchInterviewPreps()
+  }, [])
+
 
   const statusLists = [
     "APPLIED",
     "SHORTLISTED",
     "REJECTED",
   ]
+
+  const handleGeneratePrep = async (jobId: string, jobTitle: string) => {
+    setGeneratingPrep(jobId);
+    try {
+      const result = await generateInterviewPrep(jobId);
+      if (result?.success) {
+        toast.success(`Interview preparation generated for ${jobTitle}!`);
+        setInterviewPreps(prev => [...prev, jobId])
+      } else {
+        toast.error(result?.message || "Failed to generate preparation");
+      }
+    } catch (error) {
+      console.error("Failed to generate interview prep:", error);
+      toast.error("Failed to generate interview preparation");
+    } finally {
+      setGeneratingPrep(null);
+    }
+  };
+
+  const hasInterviewPrep = (jobId: string) => {
+    return interviewPreps.includes(jobId)
+  }
 
   return (
     <div className="space-y-6">
@@ -116,12 +156,21 @@ function UserAppliedJobs({ getStatusBadgeColor, getStatusIcon }: { getStatusBadg
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      <Button
-                        onClick={() => setSelectedApplication(app)}
-                        className="bg-transparent border border-white/10 hover:bg-white/5 text-xs h-8 px-3 text-white rounded-md cursor-pointer"
-                      >
-                        Details
-                      </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            onClick={() => handleGeneratePrep(app.job.id, app.job.title)}
+                            disabled={generatingPrep === app.job.id || hasInterviewPrep(app.job.id)}
+                            className="bg-primary/10 border border-primary/20 hover:bg-primary/20 text-primary text-xs h-8 px-3 rounded-md cursor-pointer"
+                          >
+                            {generatingPrep === app.job.id ? "Generating..." : hasInterviewPrep(app.job.id) ? "Prep Created" : "AI Prep"}
+                          </Button>
+                          <Button
+                            onClick={() => setSelectedApplication(app)}
+                            className="bg-transparent border border-white/10 hover:bg-white/5 text-xs h-8 px-3 text-white rounded-md cursor-pointer"
+                          >
+                            Details
+                          </Button>
+                        </div>
                     </td>
                   </tr>
                 ))}
