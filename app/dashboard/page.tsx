@@ -2,6 +2,8 @@ import { getMe } from "@/app/services/auth/auth";
 import { redirect } from "next/navigation";
 import DashboardClient from "@/components/dashboard/DashboardClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const user = await getMe();
 

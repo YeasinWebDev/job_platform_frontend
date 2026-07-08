@@ -324,8 +324,6 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
                 <AdminDashboard
                   activeTab={activeTab}
                   user={initialUser}
-                  mockData={mockData}
-                  setMockData={setMockData}
                 />
               )}
             </motion.div>

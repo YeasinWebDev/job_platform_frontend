@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { MapPin, Briefcase, Users, Clock, Bookmark } from "lucide-react";
-import { Loader2 } from "lucide-react";
 import { Award } from "lucide-react";
-import { Job, UserType } from "@/types/jobTypes";
+import { Job } from "@/types/jobTypes";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { applyForJob, getJobById, createBookmark as createBookmarkService, deleteBookmark as deleteBookmarkService } from "@/app/services/job/job.service";

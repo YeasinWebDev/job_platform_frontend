@@ -1,6 +1,8 @@
 import { getMe } from "@/app/services/auth/auth"
 import ProfileMainPage from "@/components/home/ProfileMainPage"
 
+export const dynamic = 'force-dynamic';
+
 async function Profile() {
   const user = await getMe()
   return (

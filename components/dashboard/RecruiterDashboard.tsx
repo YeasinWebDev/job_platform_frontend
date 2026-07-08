@@ -34,7 +34,7 @@ export default function RecruiterDashboard({
       return<RecruiterOverview user={user} setActiveTab={setActiveTab}/>;
 
     case "manage-jobs":
-      return <RecruiterManageJobs mockData={mockData} setMockData={setMockData} />;
+      return <RecruiterManageJobs />;
 
     case "post-job":
       return <RecruiterPostJob user={user} />
