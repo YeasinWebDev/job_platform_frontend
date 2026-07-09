@@ -16,7 +16,7 @@ import { logoutUser } from "@/app/services/auth/auth";
 
 export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user: any }) {
   const [scrolled, setScrolled] = useState(false);
-  const [routes, setRoutes] = useState(["Job", "Companies", "How It Works", "Blog"]);
+  const [routes, setRoutes] = useState(["Jobs", "How It Works", "Blog"]);
 
   const router = useRouter();
 
@@ -27,12 +27,6 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
 
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      setRoutes(["Job", "Companies", "How It Works", "Blog", "Dashboard"]);
-    }
-  }, [isLoggedIn]);
 
   const handleLogout = async () => {
     await logoutUser();
@@ -71,7 +65,7 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
           {routes.map((item) => (
             <motion.li whileHover={{ y: -2 }} key={item}>
               <Link
-                href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
+                href={item === "Find Jobs" ? "/job" : `/${item.toLowerCase().replace(/\s+/g, "-")}`}
                 className="text-[12px] xl:text-sm uppercase tracking-[0.2em] text-gray-300 hover:text-primary transition-colors duration-200"
               >
                 {item}
@@ -132,7 +126,7 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
                       }}
                     >
                       <Link
-                        href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
+                        href={item === "Find Jobs" ? "/job" : `/${item.toLowerCase().replace(/\s+/g, "-")}`}
                         className="text-sm uppercase tracking-[0.2em] text-gray-300 hover:text-primary transition-colors duration-200 ml-5"
                       >
                         {item}
