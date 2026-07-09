@@ -31,7 +31,7 @@ export default function Hero() {
         </p>
 
         {/* Search */}
-        <div className="mt-11 flex hero-item hero-item-4">
+        {/* <div className="mt-11 flex hero-item hero-item-4">
           <input
             type="text"
             placeholder="Role, skill, or company..."
@@ -40,7 +40,7 @@ export default function Hero() {
           <button className="bg-primary hover:bg-primary/40 text-bg font-bold text-[0.83rem] tracking-wider uppercase px-7 py-4 transition-colors duration-200 cursor-none">
             Search
           </button>
-        </div>
+        </div> */}
 
         {/* Stats */}
         <div className="mt-14 flex gap-10 hero-item hero-item-5">

@@ -75,7 +75,7 @@ function UserSavedJobs() {
                 </div>
                 <Button
                   onClick={() => handleRemoveBookmark(job.id)}
-                  className="h-8 w-8 p-0 bg-transparent hover:bg-red-500/10 text-gray-500 hover:text-red-400 rounded-lg border border-white/5 hover:border-red-500/20 cursor-pointer shrink-0 transition-all duration-200"
+                  className="h-8 w-8 p-0 bg-transparent text-primary hover:bg-red-500/10 hover:text-red-400 rounded-lg border border-white/5 hover:border-red-500/20 cursor-pointer shrink-0 transition-all duration-200"
                   title="Remove from saved"
                 >
                   <Bookmark className="w-3.5 h-3.5 fill-current" />

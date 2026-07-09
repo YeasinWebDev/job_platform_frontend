@@ -1,30 +1,31 @@
-# Job Platform Frontend
+# HirePeople — Job Platform Frontend
 
-A modern, responsive job platform frontend built with Next.js 16, React 19, and TypeScript. This application provides a comprehensive job search and application platform with user dashboards, interview preparation tools, and seamless user experience.
+A modern, responsive job platform frontend (branded **HirePeople**) built with Next.js 16, React 19, and TypeScript. This application provides a comprehensive job search and application platform with user and recruiter dashboards, job posting with payment, and a seamless user experience.
 
 ## Features
 
-- **User Authentication** - Secure login and registration system
-- **Job Search & Browsing** - Search and filter job listings
-- **Job Applications** - Apply to jobs and track application status
-- **User Dashboard** - Manage profile, view applied jobs, and track progress
-- **Interview Preparation** - Access interview prep resources and tools
+- **User Authentication** - Secure login and registration system with role-based access (User, Recruiter, Admin)
+- **Job Search & Browsing** - Search and filter job listings by location, category, experience, job type, salary, and date posted
+- **Job Applications** - Apply to jobs and track application status (Applied, Shortlisted, Rejected)
+- **User Dashboard** - Manage profile, view applied/saved jobs, and track application analytics
+- **Recruiter Dashboard** - Post jobs, view applications, and monitor posting analytics
+- **Job Posting & Payment** - Publish job listings with an integrated payment success flow
 - **Responsive Design** - Mobile-first design with Tailwind CSS
-- **Modern UI Components** - Built with shadcn/ui and custom components
+- **Modern UI Components** - Built with shadcn/ui, Base UI, and custom components
 - **Smooth Animations** - Enhanced UX with Framer Motion
 - **Real-time Notifications** - Toast notifications for user actions
 
 ## Tech Stack
 
-- **Framework**: Next.js 16.1.6 with App Router
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript 5
-- **Styling**: Tailwind CSS v4
-- **UI Components**: shadcn/ui, Base UI
+- **Styling**: Tailwind CSS v4, tw-animate-css
+- **UI Components**: shadcn/ui, Base UI (@base-ui/react)
 - **Animations**: Framer Motion
 - **Icons**: Lucide React
 - **State Management**: React Hooks
 - **Notifications**: React Hot Toast
-- **Utilities**: clsx, tailwind-merge, class-variance-authority
+- **Utilities**: clsx, tailwind-merge, class-variance-authority, use-debounce
 
 ## Getting Started
 
@@ -50,7 +51,17 @@ yarn install
 pnpm install
 ```
 
-3. Run the development server:
+3. Set up environment variables:
+```bash
+cp .env.example .env.local
+```
+Then set the following variable in your `.env.local`:
+```
+NEXT_PUBLIC_API_URL=https://your-backend-api-url.com
+```
+This points the frontend at the backend API used for auth, jobs, categories, and applications.
+
+4. Run the development server:
 ```bash
 npm run dev
 # or
@@ -59,7 +70,7 @@ yarn dev
 pnpm dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
 ## Available Scripts
 
@@ -74,28 +85,27 @@ pnpm dev
 job_platform_frontend/
 ├── app/                    # Next.js App Router pages and layouts
 │   ├── (auth)/            # Authentication pages
-│   ├── (homePage)/        # Home page components
-│   ├── dashboard/         # User dashboard pages
+│   ├── (homePage)/        # Home and job board pages
+│   ├── dashboard/         # User and recruiter dashboard pages
 │   ├── payment/           # Payment related pages
-│   └── services/          # Service pages
+│   └── services/          # API service layer (auth, job, category)
 ├── components/            # Reusable React components
 │   ├── dashboard/         # Dashboard-specific components
 │   ├── home/              # Home page components
 │   └── ui/                # UI library components
-├── lib/                   # Utility functions and configurations
+├── lib/                   # Utility functions and server fetch helper
 ├── public/                # Static assets
 ├── types/                 # TypeScript type definitions
-└── middleware.ts          # Next.js middleware for routing and auth
+└── middleware.ts          # Next.js middleware for route protection and auth
 ```
 
 ## Key Components
 
 - **Navbar & Footer** - Navigation and site footer
-- **Job Cards** - Display job listings with filtering
-- **User Dashboard** - Personal dashboard with stats and applied jobs
-- **Interview Prep** - Tools and resources for interview preparation
+- **Job Cards & Job Board** - Display and filter job listings
+- **User & Recruiter Dashboards** - Personal dashboards with stats and applications
 - **Authentication Forms** - Login and registration forms
-- **Payment Integration** - Payment processing components
+- **Payment Integration** - Payment processing and success confirmation
 
 ## Development
 
@@ -109,11 +119,15 @@ npm run lint
 
 ### Styling
 
-The project uses Tailwind CSS v4 with a custom configuration. UI components are built using shadcn/ui and custom variants with class-variance-authority.
+The project uses Tailwind CSS v4 with a custom configuration. UI components are built using shadcn/ui, Base UI, and custom variants with class-variance-authority.
 
 ### Type Safety
 
 TypeScript is configured with strict mode enabled. All components and functions are fully typed.
+
+### Environment Configuration
+
+The application communicates with a backend API. The base URL is configured via the `NEXT_PUBLIC_API_URL` environment variable (see `.env.local`). Middleware protects private routes (`/profile`, `/dashboard`) by checking the `authToken` cookie.
 
 ## Deployment
 
@@ -123,7 +137,8 @@ The easiest way to deploy this Next.js app is using the [Vercel Platform](https:
 
 1. Push your code to GitHub
 2. Import your repository on Vercel
-3. Vercel will automatically detect Next.js and deploy your application
+3. Set the `NEXT_PUBLIC_API_URL` environment variable in your Vercel project settings
+4. Vercel will automatically detect Next.js and deploy your application
 
 ### Other Deployment Options
 

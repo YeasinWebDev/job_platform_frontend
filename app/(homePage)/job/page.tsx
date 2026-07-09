@@ -295,19 +295,26 @@ export default function JobBoardPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
                     {jobs.map((job) => (
                       <Link href={`/job/${job.id}`} key={job.id} className={`cursor-pointer relative bg-[#111110] hover:bg-[#161614] p-9 transition-all duration-300 h-64`}>
-                        <div className="text-[0.7rem] text-red-400 absolute top-10 right-10 flex items-center justify-center gap-5">
-                          <span>Expires: {new Date(job.expiresAt).toLocaleDateString()}</span>
-                          <Button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              isBookmarked(job.bookmarkedBy) ? deleteBookmark(job.id) : createBookmark(job.id);
-                            }}
-                            className={`p-0 bg-transparent ${isBookmarked(job.bookmarkedBy) ? "text-primary" : ""}`}
-                            title=""
-                          >
-                            <Bookmark className="size-6 fill-current" />
-                          </Button>
-                        </div>
+                        {userId && (
+                          <div className="text-[0.7rem] text-red-400 absolute top-10 right-10 flex items-center justify-center gap-5">
+                            <span>Expires: {new Date(job.expiresAt).toLocaleDateString()}</span>
+                            <Button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                isBookmarked(job.bookmarkedBy) ? deleteBookmark(job.id) : createBookmark(job.id);
+                              }}
+                              className={`p-0 bg-transparent ${isBookmarked(job.bookmarkedBy) ? "text-primary" : ""}`}
+                              title=""
+                            >
+                              <Bookmark className="size-6 fill-current" />
+                            </Button>
+                          </div>
+                        )}
+                        {!userId && (
+                          <div className="text-[0.7rem] text-red-400 absolute top-10 right-10">
+                            <span>Expires: {new Date(job.expiresAt).toLocaleDateString()}</span>
+                          </div>
+                        )}
                         {/* Company */}
                         <div className="flex items-center gap-3 mb-4">
                           <div className="w-9 h-9 bg-primary/10 border border-primary/15 flex items-center justify-center font-bold text-[0.72rem] text-primary">
