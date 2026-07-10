@@ -129,6 +129,22 @@ TypeScript is configured with strict mode enabled. All components and functions 
 
 The application communicates with a backend API. The base URL is configured via the `NEXT_PUBLIC_API_URL` environment variable (see `.env.local`). Middleware protects private routes (`/profile`, `/dashboard`) by checking the `authToken` cookie.
 
+## Demo Credentials
+
+For testing purposes, you can use the following demo accounts:
+
+### Job Seeker Account
+- **Email:** yeasindev8@gmail.com
+- **Password:** 123456
+
+### Recruiter Accounts
+1. **Email:** yeasin@gmail.com
+  - **Password:** 123456
+
+### Admin Accounts
+2. **Email:** arafat@gmail.com
+  - **Password:** 123456
+
 ## Deployment
 
 ### Deploy on Vercel

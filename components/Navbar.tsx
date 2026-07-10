@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu } from "lucide-react";
@@ -16,9 +16,19 @@ import { logoutUser } from "@/app/services/auth/auth";
 
 export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user: any }) {
   const [scrolled, setScrolled] = useState(false);
-  const [routes, setRoutes] = useState(["Jobs", "How It Works", "Blog"]);
+  const [routes, setRoutes] = useState(["Jobs", "About", "How It Works", "Blog"]);
+  const pathname = usePathname();
 
   const router = useRouter();
+
+  // Update routes when login status changes
+  useEffect(() => {
+    if (isLoggedIn) {
+      setRoutes(["Jobs", "About", "How It Works", "Blog", "Dashboard"]);
+    } else {
+      setRoutes(["Jobs", "About", "How It Works", "Blog"]);
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -50,9 +60,8 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
 
   return (
     <nav
-      className={`fixed top-0 z-50 w-full border-b border-gray-800/50 transition-all duration-300 ${
-        scrolled ? "bg-black/80 backdrop-blur-xl" : "bg-gradient-to-b from-black/90 to-transparent"
-      }`}
+      className={`fixed top-0 z-50 w-full border-b border-gray-800/50 transition-all duration-300 ${scrolled ? "bg-black/80 backdrop-blur-xl" : "bg-linear-to-b from-black/90 to-transparent"
+        }`}
     >
       <div className="flex items-center justify-between px-5 md:px-8 lg:px-16 py-4">
         {/* Logo */}
@@ -62,16 +71,30 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
 
         {/* Desktop Nav */}
         <ul className="hidden lg:flex items-center gap-8">
-          {routes.map((item) => (
-            <motion.li whileHover={{ y: -2 }} key={item}>
-              <Link
-                href={item === "Find Jobs" ? "/job" : `/${item.toLowerCase().replace(/\s+/g, "-")}`}
-                className="text-[12px] xl:text-sm uppercase tracking-[0.2em] text-gray-300 hover:text-primary transition-colors duration-200"
-              >
-                {item}
-              </Link>
-            </motion.li>
-          ))}
+          {routes.map((item) => {
+            let href;
+            if (item === "Jobs") {
+              href = "/job";
+            } else if (item === "Dashboard") {
+              href = "/dashboard";
+            } else {
+              href = `/${item.toLowerCase().replace(/\s+/g, "-")}`;
+            }
+            const isActive = pathname === href || (item === "Jobs" && pathname === "/job");
+            
+            return (
+              <motion.li whileHover={{ y: -2 }} key={item}>
+                <Link
+                  href={href}
+                  className={`text-[12px] xl:text-sm uppercase tracking-[0.2em] transition-colors duration-200 ${
+                    isActive ? "text-primary" : "text-gray-300 hover:text-primary"
+                  }`}
+                >
+                  {item}
+                </Link>
+              </motion.li>
+            );
+          })}
         </ul>
 
         {/* Desktop Auth */}
@@ -96,7 +119,7 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
         <div className="lg:hidden">
           <Sheet>
             <SheetTrigger>
-                <Menu className="w-6 h-6" />
+              <Menu className="w-6 h-6" />
             </SheetTrigger>
 
             <SheetContent side="right" className="w-[300px] bg-black border-l border-gray-800 text-white">
@@ -116,23 +139,37 @@ export default function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user
                   transition={{ duration: 0.3 }}
                   className="flex flex-col gap-6"
                 >
-                  {routes.map((item, index) => (
-                    <motion.li
-                      key={item}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        delay: index * 0.08,
-                      }}
-                    >
-                      <Link
-                        href={item === "Find Jobs" ? "/job" : `/${item.toLowerCase().replace(/\s+/g, "-")}`}
-                        className="text-sm uppercase tracking-[0.2em] text-gray-300 hover:text-primary transition-colors duration-200 ml-5"
+                  {routes.map((item, index) => {
+                    let href;
+                    if (item === "Jobs") {
+                      href = "/job";
+                    } else if (item === "Dashboard") {
+                      href = "/dashboard";
+                    } else {
+                      href = `/${item.toLowerCase().replace(/\s+/g, "-")}`;
+                    }
+                    const isActive = pathname === href || (item === "Jobs" && pathname === "/job");
+                    
+                    return (
+                      <motion.li
+                        key={item}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                          delay: index * 0.08,
+                        }}
                       >
-                        {item}
-                      </Link>
-                    </motion.li>
-                  ))}
+                        <Link
+                          href={href}
+                          className={`text-sm uppercase tracking-[0.2em] transition-colors duration-200 ml-5 ${
+                            isActive ? "text-primary" : "text-gray-300 hover:text-primary"
+                          }`}
+                        >
+                          {item}
+                        </Link>
+                      </motion.li>
+                    );
+                  })}
 
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="pt-6 ml-5">
                     {isLoggedIn ? (

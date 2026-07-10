@@ -218,6 +218,49 @@ export default function AuthPage() {
                       </Label>
                     </div>
 
+                    {/* Demo Credentials */}
+                    <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                      <p className="text-[11px] font-semibold text-primary uppercase tracking-wider mb-2.5">Demo Credentials</p>
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setForm({ ...form, email: "yeasindev8@gmail.com", password: "123456" });
+                            toast.success("Job Seeker credentials filled");
+                          }}
+                          className="w-full text-left p-2.5 bg-black/30 hover:bg-black/50 border border-white/10 hover:border-primary/30 rounded-md transition-all duration-200 cursor-pointer group"
+                        >
+                          <p className="text-[11px] text-white/60 group-hover:text-white/80 transition-colors">
+                            <span className="text-white/40 group-hover:text-primary/80 font-medium">Job Seeker:</span> yeasindev8@gmail.com / 123456
+                          </p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setForm({ ...form, email: "yeasin@gmail.com", password: "123456" });
+                            toast.success("Recruiter credentials filled");
+                          }}
+                          className="w-full text-left p-2.5 bg-black/30 hover:bg-black/50 border border-white/10 hover:border-primary/30 rounded-md transition-all duration-200 cursor-pointer group"
+                        >
+                          <p className="text-[11px] text-white/60 group-hover:text-white/80 transition-colors">
+                            <span className="text-white/40 group-hover:text-primary/80 font-medium">Recruiter:</span> yeasin@gmail.com / 123456
+                          </p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setForm({ ...form, email: "arafat@gmail.com", password: "123456" });
+                            toast.success("Admin credentials filled");
+                          }}
+                          className="w-full text-left p-2.5 bg-black/30 hover:bg-black/50 border border-white/10 hover:border-primary/30 rounded-md transition-all duration-200 cursor-pointer group"
+                        >
+                          <p className="text-[11px] text-white/60 group-hover:text-white/80 transition-colors">
+                            <span className="text-white/40 group-hover:text-primary/80 font-medium">Admin:</span> arafat@gmail.com / 123456
+                          </p>
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex items-center justify-between mb-6">
                       <label className="flex items-center gap-2 text-sm text-white/40 cursor-pointer select-none">
                         <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="accent-primary/80 w-4 h-4 cursor-pointer" />

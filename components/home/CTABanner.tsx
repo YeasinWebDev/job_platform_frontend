@@ -30,13 +30,13 @@ export default function CTABanner() {
 
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
-            href="#"
+            href="/auth"
             className="inline-flex items-center gap-2.5 bg-primary hover:bg-primary/50 text-bg font-bold text-[0.83rem] tracking-wider uppercase px-9 py-4 transition-all duration-300 hover:-translate-y-0.5"
           >
             Get Started — It&apos;s Free
           </Link>
           <Link
-            href="#"
+            href="/job"
             className="inline-flex items-center gap-2.5 border border-primary text-primary px-8 py-4 font-bold text-[0.8rem] tracking-wider uppercase hover:bg-primary hover:text-white transition-all duration-200"
           >
             Browse Jobs First →
