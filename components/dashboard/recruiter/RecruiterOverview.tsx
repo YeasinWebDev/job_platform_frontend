@@ -207,7 +207,7 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
             {/* Application Breakdown & Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Application Type Breakdown */}
-                <Card className="bg-[#121211] border-white/5">
+                <Card className="bg-[#121211] border-white/5 h-[18rem]">
                     <CardHeader className="border-b border-white/5 py-4">
                         <div className="flex items-center gap-2.5">
                             <div className="p-1.5 rounded-md bg-purple-500/10">
@@ -276,7 +276,7 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
                 </Card>
 
                 {/* Contract Type Breakdown */}
-                <Card className="bg-[#121211] border-white/5">
+                <Card className="bg-[#121211] border-white/5 h-[18rem]">
                     <CardHeader className="border-b border-white/5 py-4">
                         <div className="flex items-center gap-2.5">
                             <div className="p-1.5 rounded-md bg-cyan-500/10">
@@ -364,7 +364,7 @@ function RecruiterOverview({ user, setActiveTab }: { user: any, setActiveTab: Re
                 </Card>
 
                 {/* Quick Actions Card */}
-                <Card className="bg-[#121211] border-white/5">
+                <Card className="bg-[#121211] border-white/5 h-[18rem]">
                     <CardHeader className="border-b border-white/5 py-4">
                         <CardTitle className="text-sm font-bold tracking-wide text-white uppercase">Quick Actions</CardTitle>
                     </CardHeader>
